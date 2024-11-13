@@ -6,8 +6,9 @@ import logging
 import json
 
 from .replay_test_result import ReplayTestResult
+from .logging_config import get_logger
 
-_logger_ = logging.getLogger(__name__)
+_logger_ = get_logger()
 
 
 def unittest_results_to_xml(
@@ -27,8 +28,6 @@ def unittest_results_to_xml(
     total_errors = 0
 
     _logger_.debug(f"Writing test results to XML: {name}")
-
-    print("***RESULTS****")
 
     for result_index, replay_test_result in enumerate(test_results):
         suite = ET.SubElement(test_suites, "testsuite")

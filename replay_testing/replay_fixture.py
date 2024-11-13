@@ -24,7 +24,6 @@ class ReplayFixture:
         )
 
     def cleanup_run_fixtures(self):
-        print("length of fixtures: ", len(self.run_fixtures))
         for run_fixture in self.run_fixtures:
             mcap_folder = run_fixture.path
             # TODO(troy): cleanup this HACK

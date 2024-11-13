@@ -19,6 +19,7 @@
 
   <depend>mcap-ros2-support</depend>
   <depend>mcap_recorder</depend>
+  <exec_depend>python3-termcolor</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
