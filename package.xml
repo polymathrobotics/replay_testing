@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>replay_testing</name>
+  <version>0.0.0</version>
+  <description>A testing library and CLI for replaying ROS nodes.</description>
+
+  <maintainer email="troy@polymathrobotics.com">Troy Gibb</maintainer>
+
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>rclcpp</build_depend>
+  <build_export_depend>rclcpp</build_export_depend>
+  <exec_depend>rclcpp</exec_depend>
+
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>python3-junitparser</test_depend>
+
+  <depend>mcap_recorder</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+
