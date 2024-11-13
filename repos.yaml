@@ -1,0 +1,17 @@
+repositories:
+  replay_testing:
+    type: git
+    url: git@gitlab.com:polymathrobotics/replay_testing.git
+    version: main
+  polymath_core:
+    type: git
+    url: git@gitlab.com:polymathrobotics/polymath_core.git
+    version: main
+  navigation2_dynamic:
+    type: git
+    url: git@gitlab.com:polymathrobotics/third_party/navigation2_dynamic.git
+    version: master
+  prometheus-cpp-ros:
+    type: git
+    url: git@gitlab.com:polymathrobotics/third_party/prometheus-cpp-ros.git
+    version: main
