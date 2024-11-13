@@ -1,7 +1,6 @@
 import inspect
 import os
 import difflib
-import logging
 
 
 import uuid
@@ -13,6 +12,8 @@ from launch.actions import (
     ExecuteProcess,
     RegisterEventHandler,
 )
+
+from termcolor import colored
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
@@ -25,10 +26,11 @@ from .reader import get_sequential_mcap_reader, get_message_mcap_reader
 from .models import ReplayTestingPhase, McapFixture
 from .filter import filter_mcap
 from .replay_fixture import ReplayFixture
+from .logging_config import get_logger
 # TODO: Use ReplayTestResult here instead of unittest.TextTestResult
 # from .replay_test_result import ReplayTestResult
 
-_logger_ = logging.getLogger(__name__)
+_logger_ = get_logger()
 
 
 class ReplayTestingRunner:
@@ -52,11 +54,19 @@ class ReplayTestingRunner:
                 f"/tmp/replay_testing/{self._test_run_uuid}"
             )
 
-    def _log_stage(self, stage: str, is_start: bool = True):
-        if is_start:
-            _logger_.info(f"========== Starting {stage} stage ==========")
-        else:
-            _logger_.info(f"========== {stage} stage completed ==========")
+    def _log_stage(self, stage: ReplayTestingPhase, is_start: bool = True):
+        stage_name = stage.name
+        msg = f"STAGE {stage_name} STARTING" if is_start else f"STAGE {stage_name} COMPLETED"
+        padded_msg = f" {msg} ".center(60, "=")
+        _logger_.info(colored("=" * len(padded_msg), "blue"))
+        _logger_.info(colored(padded_msg, "blue"))
+        _logger_.info(colored("=" * len(padded_msg), "blue"))
+
+    def _log_stage_start(self, stage: str):
+        self._log_stage(stage, is_start=True)
+
+    def _log_stage_end(self, stage: str):
+        self._log_stage(stage, is_start=False)
 
     def _get_stage_class(self, stage: ReplayTestingPhase):
         # - add exception if multiple preps are defined?
@@ -117,7 +127,7 @@ class ReplayTestingRunner:
         )
 
     def fixtures(self) -> str:
-        self._log_stage(ReplayTestingPhase.FIXTURES)
+        self._log_stage_start(ReplayTestingPhase.FIXTURES)
 
         # todo: Add exception handling
         fixture_cls = self._get_stage_class(ReplayTestingPhase.FIXTURES)
@@ -173,12 +183,12 @@ class ReplayTestingRunner:
 
             self._replay_fixtures.append(replay_fixture)
 
-        self._log_stage(ReplayTestingPhase.FIXTURES, is_start=False)
+        self._log_stage_end(ReplayTestingPhase.FIXTURES)
 
         return self._replay_fixtures
 
     def run(self):
-        self._log_stage(ReplayTestingPhase.RUN)
+        self._log_stage_start(ReplayTestingPhase.RUN)
 
         run_cls = self._get_stage_class(ReplayTestingPhase.RUN)
         run = run_cls()
@@ -212,11 +222,11 @@ class ReplayTestingRunner:
             # TODO(troy): Pretty please emove this hack please
 
             replay_fixture.cleanup_run_fixtures()
-            self._log_stage(ReplayTestingPhase.RUN, is_start=False)
+            self._log_stage_end(ReplayTestingPhase.RUN)
         return self._replay_fixtures
 
     def analyze(self) -> list[unittest.TextTestResult]:
-        self._log_stage(ReplayTestingPhase.ANALYZE)
+        self._log_stage_start(ReplayTestingPhase.ANALYZE)
         results = []
         for replay_fixture in self._replay_fixtures:
             analyze_cls = self._get_stage_class(ReplayTestingPhase.ANALYZE)
@@ -232,9 +242,9 @@ class ReplayTestingRunner:
                     AnalyzeWithReader
                 )
                 # TODO: Wrap in error handler?
-                result = unittest.TextTestRunner().run(suite)
+                result = unittest.TextTestRunner(verbosity=2).run(suite)
                 results.append(result)
-                self._log_stage(ReplayTestingPhase.ANALYZE, is_start=False)
+                self._log_stage_end(ReplayTestingPhase.ANALYZE)
 
             # TODO: Maybe return the test class here? Or the results?
 

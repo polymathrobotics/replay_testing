@@ -6,17 +6,9 @@ import logging
 import os
 import sys
 
-from replay_testing import ReplayTestingRunner, unittest_results_to_xml
+from replay_testing import ReplayTestingRunner, unittest_results_to_xml, get_logger
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler()  # Console output
-    ]
-)
-
-_logger_ = logging.getLogger(__name__)
+_logger_ = get_logger()
 
 
 def _load_python_file_as_module(test_module_name, python_file_path):
@@ -74,13 +66,8 @@ def parse_arguments():
 
 
 def run(parser, args):
-    _logger_.info("Running replay test file '{}'".format(
-        args.replay_test_file))
     # Load the test file as a module and make sure it has the required
     # components to run it as a replay test
-    _logger_.debug(
-        "Loading tests from file '{}'".format(args.replay_test_file)
-    )
     if not os.path.isfile(args.replay_test_file):
         # Note to future reader: parser.error also exits as a side effect
         parser.error(
@@ -118,12 +105,14 @@ def run(parser, args):
         except Exception as e:
             print("Error writing xUnit report: {}".format(e))
             return 1
+
     if not all([result.wasSuccessful() for result in results]):
         return 1
     return 0
 
 
 def main():
+    _logger_.info("Starting replay test runner")
     parser, args = parse_arguments()
 
     if args.verbose:
