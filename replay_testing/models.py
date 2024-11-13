@@ -18,7 +18,7 @@ class ReplayRunParams(BaseModel):
 
 class McapFixture(BaseModel):
     path: str
-    reader: Optional[McapReader]
+    reader: Optional[McapReader] = None
 
     class Config:
         arbitrary_types_allowed = True
