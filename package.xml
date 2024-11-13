@@ -17,6 +17,7 @@
   <test_depend>python3-pytest</test_depend>
   <test_depend>python3-junitparser</test_depend>
 
+  <depend>mcap-ros2-support</depend>
   <depend>mcap_recorder</depend>
 
   <export>
