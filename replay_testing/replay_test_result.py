@@ -10,19 +10,10 @@ class ReplayTestResult(unittest.TextTestResult):
     """
 
     def __init__(self, stream=None, descriptions=None, verbosity=None):
-        self.__test_cases = {}
+        if verbosity is None:
+            verbosity = 1  # Default verbosity level if not provided
+        self.successes = []
         super().__init__(stream, descriptions, verbosity)
 
-    @property
-    def testCases(self):
-        return self.__test_cases.keys()
-     
-    def append(self, results):
-        self.__test_cases.update(results.__test_cases)
-
-        self.failures += results.failures
-        self.errors += results.errors
-        self.testsRun += results.testsRun
-        self.skipped += results.skipped
-        self.expectedFailures += results.expectedFailures
-        self.unexpectedSuccesses += results.unexpectedSuccesses
+    def addSuccess(self, test):
+        self.successes.append(test)

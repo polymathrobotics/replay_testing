@@ -19,8 +19,6 @@ from replay_testing import (
 )
 
 
-# from replay_testing.replay_testing import ReplayTestingRunner, fixtures, get_sequential_mcap_reader, run, get_message_mcap_reader, analyze, McapFixture, ReplayRunParams
-
 replay_testing_dir = get_package_share_directory("replay_testing")
 
 cmd_vel_only_fixture = os.path.join(
@@ -172,8 +170,8 @@ def test_analyze():
 
     runner.fixtures()
     runner.run()
-    results = runner.analyze()
-    assert all([result.wasSuccessful() for result in results]) == True
+    exit_code, _ = runner.analyze()
+    assert exit_code == 0
 
     return
 
@@ -218,8 +216,8 @@ def test_failed_analyze():
 
     runner.fixtures()
     runner.run()
-    results = runner.analyze()
-    assert all([result.wasSuccessful() for result in results]) == False
+    exit_code, _ = runner.analyze(write_junit=False)
+    assert exit_code == 1
 
     return
 
@@ -283,8 +281,8 @@ def test_multiple_fixtures():
     assert len(replay_fixtures[0].run_fixtures) == 1
     assert len(replay_fixtures[1].run_fixtures) == 1
 
-    results = runner.analyze()
-    assert all([result.wasSuccessful() for result in results]) == True
+    exit_code, _ = runner.analyze()
+    assert exit_code == 0
 
     return
 
@@ -347,8 +345,8 @@ def test_parametric_sweep():
 
     runner.fixtures()
     replay_fixtures = runner.run()
-    results = runner.analyze()
-    assert all([result.wasSuccessful() for result in results]) == True
+    exit_code, _ = runner.analyze()
+    assert exit_code == 0
 
     assert len(replay_fixtures) == 1
     assert len(replay_fixtures[0].run_fixtures) == 2

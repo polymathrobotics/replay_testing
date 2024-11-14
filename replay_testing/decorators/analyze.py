@@ -18,5 +18,5 @@ def analyze(cls):
         ReplayTestingPhase.ANALYZE
     )
     WrappedAnalyze.__annotations__["suite_name"] = cls.__name__
- 
+
     return WrappedAnalyze
