@@ -27,8 +27,8 @@ from .models import ReplayTestingPhase, McapFixture
 from .filter import filter_mcap
 from .replay_fixture import ReplayFixture
 from .logging_config import get_logger
-# TODO: Use ReplayTestResult here instead of unittest.TextTestResult
-# from .replay_test_result import ReplayTestResult
+from .replay_test_result import ReplayTestResult
+from .junit_to_xml import unittest_results_to_xml, write_xml_to_file, pretty_log_junit_xml
 
 _logger_ = get_logger()
 
@@ -58,9 +58,9 @@ class ReplayTestingRunner:
         stage_name = stage.name
         msg = f"STAGE {stage_name} STARTING" if is_start else f"STAGE {stage_name} COMPLETED"
         padded_msg = f" {msg} ".center(60, "=")
-        _logger_.info(colored("=" * len(padded_msg), "blue"))
-        _logger_.info(colored(padded_msg, "blue"))
-        _logger_.info(colored("=" * len(padded_msg), "blue"))
+        _logger_.info(colored("=" * len(padded_msg), "grey"))
+        _logger_.info(colored(padded_msg, "grey"))
+        _logger_.info(colored("=" * len(padded_msg), "grey"))
 
     def _log_stage_start(self, stage: str):
         self._log_stage(stage, is_start=True)
@@ -225,10 +225,11 @@ class ReplayTestingRunner:
             self._log_stage_end(ReplayTestingPhase.RUN)
         return self._replay_fixtures
 
-    def analyze(self) -> list[unittest.TextTestResult]:
+    def analyze(self, *, write_junit: bool = True) -> tuple[int, str]:
         self._log_stage_start(ReplayTestingPhase.ANALYZE)
-        results = []
+        results = {}
         for replay_fixture in self._replay_fixtures:
+            results[replay_fixture.input_fixture.path] = []
             analyze_cls = self._get_stage_class(ReplayTestingPhase.ANALYZE)
 
             for run_fixture in replay_fixture.run_fixtures:
@@ -238,14 +239,41 @@ class ReplayTestingRunner:
                     def setUp(inner_self):
                         super().setUp()  # Call original setUp if it exists
                         inner_self.reader = reader
+                        inner_self.suite_classname = analyze_cls.__name__
                 suite = unittest.TestLoader().loadTestsFromTestCase(
                     AnalyzeWithReader
                 )
                 # TODO: Wrap in error handler?
-                result = unittest.TextTestRunner(verbosity=2).run(suite)
-                results.append(result)
-                self._log_stage_end(ReplayTestingPhase.ANALYZE)
+                result = unittest.TextTestRunner(
+                    verbosity=2,
+                    resultclass=ReplayTestResult).run(suite)
+                results[replay_fixture.input_fixture.path].append({
+                    "result": result,
+                    "run_fixture_path": run_fixture.path,
+                    "filtered_fixture_path": replay_fixture.filtered_fixture.path
+                })
 
             # TODO: Maybe return the test class here? Or the results?
 
-        return results
+        junit_xml_path = self._replay_results_directory + "/results.xml"
+        xml_tree = unittest_results_to_xml(
+            test_results=results,
+            name=self._test_module.__name__,
+        )
+        pretty_log_junit_xml(xml_tree, junit_xml_path)
+
+        if write_junit:
+            write_xml_to_file(xml_tree, junit_xml_path)
+
+        exit_code = 0 if self._was_successful(results) else 1
+
+        self._log_stage_end(ReplayTestingPhase.ANALYZE)
+        return (exit_code, junit_xml_path)
+
+    def _was_successful(self, results: dict[str, list[tuple[ReplayTestResult, McapFixture]]]) -> bool:
+        for _, fixture_results in results.items():
+            for fixture_result in fixture_results:
+                if not fixture_result["result"].wasSuccessful():
+                    return False
+
+        return True

@@ -5,8 +5,9 @@ import importlib.util
 import logging
 import os
 import sys
+import shutil
 
-from replay_testing import ReplayTestingRunner, unittest_results_to_xml, get_logger
+from replay_testing import ReplayTestingRunner, get_logger
 
 _logger_ = get_logger()
 
@@ -89,26 +90,19 @@ def run(parser, args):
 
     runner.fixtures()
     runner.run()
-    results = runner.analyze()
+    exit_code, junit_xml_path = runner.analyze()
 
+    # Each individual test case should have its own xUnit report in the
+    # corresponding /replay_testing directory.  However for systems like Gitlab
+    # CI, we need to colocate results at the top level.
     if args.xmlpath:
         try:
-            xml_report = unittest_results_to_xml(
-                test_results=results,
-                name="{}.{}".format(
-                    args.package_name, replay_test_file_basename
-                ),
-            )
-            xml_report.write(
-                args.xmlpath, encoding="utf-8", xml_declaration=True
-            )
+            shutil.copy(junit_xml_path, args.xmlpath)
         except Exception as e:
-            print("Error writing xUnit report: {}".format(e))
+            print("Error copying xUnit report: {}".format(e))
             return 1
 
-    if not all([result.wasSuccessful() for result in results]):
-        return 1
-    return 0
+    return exit_code
 
 
 def main():

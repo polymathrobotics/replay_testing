@@ -1,76 +1,58 @@
-import unittest
-from io import BytesIO
-import pytest
-from junitparser import JUnitXml
-
-import xml.etree.ElementTree as ET
+from unittest.mock import Mock
+import socket
 
 from replay_testing.junit_to_xml import unittest_results_to_xml
+from replay_testing.replay_test_result import ReplayTestResult
 
-# from replay_testing.replay_testing import unittest_results_to_xml
 
-
-@pytest.fixture
-def mock_test_results():
-    # Create a mock unittest.TextTestResult object with sample data
-    class MockTextTestResult(unittest.TextTestResult):
-        def __init__(
-            self,
-            testsRun=0,
-            failures=None,
-            errors=None,
-            stream=None,
-            descriptions=None,
-            verbosity=None,
-        ):
-            # Provide dummy values for required arguments
-            if stream is None:
-                stream = BytesIO()
-            if descriptions is None:
-                descriptions = False
-            if verbosity is None:
-                verbosity = 1
-            super().__init__(stream, descriptions, verbosity)
-            self.testsRun = testsRun
-            self.failures = failures if failures is not None else []
-            self.errors = errors if errors is not None else []
-            self.successes = []  # Add successes to mock successful test cases
-
-    # Return a list with one or more mock results
-    return [
-        MockTextTestResult(
-            testsRun=5,
-            failures=[("test_failure", "traceback")],
-            errors=[("test_error", "traceback")],
-        ),
-        MockTextTestResult(testsRun=3, failures=[], errors=[]),
+def test_unittest_results_to_xml():
+    # Create a ReplayTestResult object and simulate some results
+    replay_result = ReplayTestResult()
+    replay_result.testsRun = 2
+    replay_result.failures = []
+    replay_result.errors = []
+    replay_result.successes = [
+        Mock(name="test_case_1"), Mock(name="test_case_2")
     ]
 
+    # Customize test mocks to include annotations by directly setting __annotations__
+    for success_test in replay_result.successes:
+        success_test.__annotations__ = {"suite_name": "suite_1"}
 
-def test_unittest_results_to_xml(mock_test_results):
-    # Generate the XML element tree from the mock results
-    xml_tree = unittest_results_to_xml(test_results=mock_test_results)
+    # Test input data for the function
+    test_results = {
+        "test_fixture": [
+            {
+                "result": replay_result,
+                "run_fixture_path": "/path/to/run_fixture",
+                "filtered_fixture_path": "/path/to/filtered_fixture"
+            }
+        ]
+    }
 
-    # Use junitparser to load the XML and validate the structure
-    junit_xml = JUnitXml.fromstring(
-        ET.tostring(xml_tree.getroot(), encoding="utf-8")
-    )
+    # Call the function
+    xml_tree = unittest_results_to_xml(
+        name="replay_test", test_results=test_results)
 
-    # Check if root element is `testsuites` and contains `testsuite`
-    assert (
-        junit_xml.name == "replay_test"
-    ), "The name attribute of testsuites should be 'replay_test'"
+    # Verify the XML structure and some content
+    root = xml_tree.getroot()
+    assert root.tag == "testsuites"
+    assert root.get("name") == "replay_test"
+    assert root.get("tests") == "2"
+    assert root.get("failures") == "0"
+    assert root.get("errors") == "0"
+    assert root.get("successes") == "2"
 
-    # Validate the tests, failures, and errors attributes
-    total_tests = sum(suite.tests for suite in junit_xml)
-    total_failures = sum(suite.failures for suite in junit_xml)
-    total_errors = sum(suite.errors for suite in junit_xml)
+    # Check the first testsuite
+    testsuite = root.find("testsuite")
+    assert testsuite is not None
+    assert testsuite.get("name") == "replay_test_suite_1"
+    assert testsuite.get("tests") == "2"
+    assert testsuite.get("failures") == "0"
+    assert testsuite.get("errors") == "0"
+    assert testsuite.get("hostname") == socket.gethostname()
+    assert testsuite.get("timestamp") is not None
 
-    assert total_tests == 8, f"Expected 8 tests, got {total_tests}"
-    assert total_failures == 1, f"Expected 1 failure, got {total_failures}"
-    assert total_errors == 1, f"Expected 1 error, got {total_errors}"
-
-    # Ensure the XML structure contains at least one TestSuite
-    assert (
-        len(junit_xml) > 0
-    ), "Expected at least one testsuite in the XML output"
+    # Check each testcase in testsuite
+    testcases = testsuite.findall("testcase")
+    assert len(testcases) == 2
