@@ -32,6 +32,10 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+ament_package(
+  CONFIG_EXTRAS "${PROJECT_NAME}-extras.cmake"
+)
+
 # Define test dependencies
 if(BUILD_TESTING)
   include(cmake/add_replay_test.cmake)
@@ -42,7 +46,4 @@ if(BUILD_TESTING)
   # Dogfood it!
   add_replay_test(test/replay_tests/basic_replay.py)
 endif()
-
-# Package ament metadata
-ament_package()
 
