@@ -101,6 +101,18 @@ class Run:
 
 Parameterizing your `run` will result in the `analyze` step being run n-param times. 
 
+#### QOS Overrides
+
+Depending on use 
+
+```python
+@run.default()
+class Run:
+    qos_overrides_yaml = "[PATH_TO_YAML]"
+    ...rest of def
+```
+
+
 ### Analyze `@analyze`
 
 The analyze step is run after the mcap from the `run` is recorded and written. It is a basic wrapper over `unittest.TestCase`, so any `unittest` assertions are built in.
