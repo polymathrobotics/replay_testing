@@ -18,6 +18,7 @@
   <test_depend>python3-junitparser</test_depend>
 
   <depend>mcap-ros2-support</depend>
+  <depend>python3-pydantic</depend>
   <depend>mcap_recorder</depend>
   <exec_depend>python3-termcolor</exec_depend>
 
