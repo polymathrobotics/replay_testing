@@ -91,6 +91,11 @@ def run(parser, args):
     runner.fixtures()
     runner.run()
     exit_code, junit_xml_path = runner.analyze()
+    
+    # TODO
+    # cli option for removing mcap after run
+    if args.cleanup:
+        os.remove(runner._replay_results_directory)
 
     # Each individual test case should have its own xUnit report in the
     # corresponding /replay_testing directory.  However for systems like Gitlab
