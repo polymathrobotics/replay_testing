@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>replay_testing</name>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <description>A testing library and CLI for replaying ROS nodes.</description>
 
+  <author email="troy@polymathrobotics.com">Troy Gibb</author>
   <maintainer email="troy@polymathrobotics.com">Troy Gibb</maintainer>
-
-  <license>TODO: License declaration</license>
+  <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <build_depend>rclcpp</build_depend>
@@ -26,4 +26,3 @@
     <build_type>ament_cmake</build_type>
   </export>
 </package>
-

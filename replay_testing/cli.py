@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
 
+
+# Copyright (c) 2025-present Polymath Robotics, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import argparse
 import importlib.util
 import logging
@@ -14,9 +30,7 @@ _logger_ = get_logger()
 
 def _load_python_file_as_module(test_module_name, python_file_path):
     """Load a given Python replay file (by path) as a Python module."""
-    spec = importlib.util.spec_from_file_location(
-        test_module_name, python_file_path
-    )
+    spec = importlib.util.spec_from_file_location(test_module_name, python_file_path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -59,9 +73,7 @@ def add_arguments(parser):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description="replay integration testing tool."
-    )
+    parser = argparse.ArgumentParser(description="replay integration testing tool.")
     add_arguments(parser)
     return parser, parser.parse_args()
 
@@ -71,20 +83,14 @@ def run(parser, args):
     # components to run it as a replay test
     if not os.path.isfile(args.replay_test_file):
         # Note to future reader: parser.error also exits as a side effect
-        parser.error(
-            "Test file '{}' does not exist".format(args.replay_test_file)
-        )
+        parser.error("Test file '{}' does not exist".format(args.replay_test_file))
 
     args.replay_test_file = os.path.abspath(args.replay_test_file)
-    replay_test_file_basename = os.path.splitext(
-        os.path.basename(args.replay_test_file)
-    )[0]
+    replay_test_file_basename = os.path.splitext(os.path.basename(args.replay_test_file))[0]
     if not args.package_name:
         args.package_name = replay_test_file_basename
 
-    test_module = _load_python_file_as_module(
-        args.package_name, args.replay_test_file
-    )
+    test_module = _load_python_file_as_module(args.package_name, args.replay_test_file)
 
     runner = ReplayTestingRunner(test_module)
 
