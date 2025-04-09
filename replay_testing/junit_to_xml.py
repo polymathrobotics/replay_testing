@@ -1,15 +1,24 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import xml.etree.ElementTree as ET
-import unittest
 import datetime
 import socket
-import logging
-import json
 from termcolor import colored
-from xml.dom import minidom
 
-from .replay_test_result import ReplayTestResult
 from .logging_config import get_logger
-from .models import ReplayTestingPhase, McapFixture
 
 _logger_ = get_logger()
 
@@ -27,9 +36,7 @@ def _format_file_link(file_path: str):
     return colored_file_link
 
 
-def unittest_results_to_xml(
-    *, name="replay_test", test_results=dict
-) -> ET:
+def unittest_results_to_xml(*, name="replay_test", test_results=dict) -> ET:
     """Serialize multiple unittest.TestResult objects into a JUnit-compatible XML document."""
     # The `testsuites` element is the root of the XML result.
     test_suites = ET.Element("testsuites")
@@ -70,8 +77,7 @@ def unittest_results_to_xml(
             for test_case in unittest_result.successes:
                 testcase = ET.SubElement(suite, "testcase")
                 testcase.set("name", str(test_case))
-                testcase.set(
-                    "classname", test_case.__annotations__.get("suite_name"))
+                testcase.set("classname", test_case.__annotations__.get("suite_name"))
                 testcase.set("time", "0")
                 systemout = ET.SubElement(testcase, "system-out")
                 systemout.text = f"[[ATTACHMENT|{run_fixture_path}]]"
@@ -79,8 +85,7 @@ def unittest_results_to_xml(
             for test_case, traceback in unittest_result.failures:
                 testcase = ET.SubElement(suite, "testcase")
                 testcase.set("name", str(test_case))
-                testcase.set(
-                    "classname", test_case.__annotations__.get("suite_name"))
+                testcase.set("classname", test_case.__annotations__.get("suite_name"))
                 testcase.set("time", "0")
                 failure = ET.SubElement(testcase, "failure")
                 failure.text = traceback
@@ -90,8 +95,7 @@ def unittest_results_to_xml(
             for test_case, traceback in unittest_result.errors:
                 testcase = ET.SubElement(suite, "testcase")
                 testcase.set("name", str(test_case))
-                testcase.set(
-                    "classname", test_case.__annotations__.get("suite_name"))
+                testcase.set("classname", test_case.__annotations__.get("suite_name"))
                 testcase.set("time", "0")
                 error = ET.SubElement(testcase, "error")
                 error.text = traceback
@@ -159,12 +163,11 @@ def pretty_log_junit_xml(et: ET, path: str):
                 # Check for failure elements and log details
                 failure = testcase.find("failure")
                 if failure is not None:
-                    failed_txt = colored("FAILED", 'red')
+                    failed_txt = colored("FAILED", "red")
                     _logger_.info(f"      Status: {failed_txt}")
-                    _logger_.info(
-                        f"      Failure Message: {failure.text.strip()}")
+                    _logger_.info(f"      Failure Message: {failure.text.strip()}")
                 else:
-                    passed_txt = colored("PASSED", 'green')
+                    passed_txt = colored("PASSED", "green")
                     _logger_.info(f"      Status: {passed_txt}")
 
                 _logger_.info("")  # Newline for better readability

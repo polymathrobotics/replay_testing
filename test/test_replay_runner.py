@@ -1,3 +1,18 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import types
 import os
 import pytest
@@ -21,12 +36,8 @@ from replay_testing import (
 
 replay_testing_dir = get_package_share_directory("replay_testing")
 
-cmd_vel_only_fixture = os.path.join(
-    replay_testing_dir, "test", "fixtures", "cmd_vel_only.mcap"
-)
-cmd_vel_only_2_fixture = os.path.join(
-    replay_testing_dir, "test", "fixtures", "cmd_vel_only_2.mcap"
-)
+cmd_vel_only_fixture = os.path.join(replay_testing_dir, "test", "fixtures", "cmd_vel_only.mcap")
+cmd_vel_only_2_fixture = os.path.join(replay_testing_dir, "test", "fixtures", "cmd_vel_only_2.mcap")
 
 
 def test_fixtures():
@@ -114,9 +125,7 @@ def test_run():
     assert "/user/cmd_vel" in topic_names
 
     msg_reader = get_message_mcap_reader(run_fixture.path)
-    msgs_it = mcap_ros2.reader.read_ros2_messages(
-        msg_reader, topics=["/user/cmd_vel"]
-    )
+    msgs_it = mcap_ros2.reader.read_ros2_messages(msg_reader, topics=["/user/cmd_vel"])
 
     msgs = [msg for msg in msgs_it]
     assert len(msgs) == 1
@@ -155,9 +164,7 @@ def test_analyze():
     @analyze
     class Analyze:
         def test_cmd_vel(self):
-            msgs_it = mcap_ros2.reader.read_ros2_messages(
-                self.reader, topics=["/user/cmd_vel"]
-            )
+            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=["/user/cmd_vel"])
 
             msgs = [msg for msg in msgs_it]
             assert len(msgs) == 1
@@ -258,9 +265,7 @@ def test_multiple_fixtures():
     @analyze
     class Analyze:
         def test_cmd_vel(self):
-            msgs_it = mcap_ros2.reader.read_ros2_messages(
-                self.reader, topics=["/user/cmd_vel"]
-            )
+            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=["/user/cmd_vel"])
 
             msgs = [msg for msg in msgs_it]
             assert len(msgs) == 1
@@ -330,9 +335,7 @@ def test_parametric_sweep():
     @analyze
     class Analyze:
         def test_cmd_vel(self):
-            msgs_it = mcap_ros2.reader.read_ros2_messages(
-                self.reader, topics=["/user/cmd_vel"]
-            )
+            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=["/user/cmd_vel"])
 
             msgs = [msg for msg in msgs_it]
             assert len(msgs) == 1

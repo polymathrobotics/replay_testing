@@ -1,3 +1,19 @@
+
+# Copyright (c) 2025-present Polymath Robotics, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 # Copyright 2019 Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -82,7 +98,7 @@ macro(parse_replay_test_arguments namespace filename)
     endif()
   endif()
 
-  if (NOT ${namespace}_TARGET)
+  if(NOT ${namespace}_TARGET)
     # strip PROJECT_SOURCE_DIR and PROJECT_BINARY_DIR from absolute filename to get unique test name (as rostest does it internally)
     set(${namespace}_TARGET ${${namespace}_FILE_NAME})
     rostest__strip_prefix(${namespace}_TARGET "${PROJECT_SOURCE_DIR}/")
@@ -159,4 +175,3 @@ macro(rostest__strip_prefix var prefix)
     endif()
   endif()
 endmacro()
-

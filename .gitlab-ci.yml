@@ -19,6 +19,9 @@ include:
 - project: 'polymathrobotics/ci/ci_templates'
   ref: main
   file: '/common/stages.yml'
+- project: "polymathrobotics/ci/ci_templates"
+  ref: main
+  file: "/common/pre-commit.yml"
 
 build_and_test_replay_testing:
   image: registry.gitlab.com/polymathrobotics/polymath_core/amd64:humble
@@ -33,4 +36,3 @@ eval_replay_testing:
   artifacts:
       reports:
         junit: $ARTIFACTS_PATH/test_results/test_results/$PACKAGE_NAME/*.xml
-
