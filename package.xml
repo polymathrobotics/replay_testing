@@ -4,6 +4,7 @@
   <version>0.0.1</version>
   <description>A testing library and CLI for replaying ROS nodes.</description>
 
+  <author email="troy@polymathrobotics.com">Troy Gibb</author>
   <maintainer email="troy@polymathrobotics.com">Troy Gibb</maintainer>
 
   <license file="LICENSE">Apache License 2.0</license>
