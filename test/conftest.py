@@ -1,3 +1,5 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc. All rights reserved
+# Proprietary. Any unauthorized copying, distribution, or modification of this software is strictly prohibited.
 # conftest.py
 import logging
 import pytest
@@ -6,6 +8,5 @@ import pytest
 @pytest.fixture(autouse=True)
 def configure_logging():
     logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )

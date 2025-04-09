@@ -1,3 +1,5 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc. All rights reserved
+# Proprietary. Any unauthorized copying, distribution, or modification of this software is strictly prohibited.
 from replay_testing import (
     fixtures,
     run,
@@ -10,18 +12,13 @@ from launch.actions import ExecuteProcess
 
 import json
 import mcap_ros2.reader
-import pathlib
 from ament_index_python.packages import get_package_share_directory
 import os
 
 replay_testing_dir = get_package_share_directory("replay_testing")
 
-cmd_vel_only_fixture = os.path.join(
-    replay_testing_dir, "test", "fixtures", "cmd_vel_only.mcap"
-)
-cmd_vel_only_2_fixture = os.path.join(
-    replay_testing_dir, "test", "fixtures", "cmd_vel_only_2.mcap"
-)
+cmd_vel_only_fixture = os.path.join(replay_testing_dir, "test", "fixtures", "cmd_vel_only.mcap")
+cmd_vel_only_2_fixture = os.path.join(replay_testing_dir, "test", "fixtures", "cmd_vel_only_2.mcap")
 
 
 @fixtures.parameterize(
@@ -42,9 +39,7 @@ class Fixtures:
     ]
 )
 class Run:
-    def generate_launch_description(
-        self, replay_run_params: ReplayRunParams
-    ) -> LaunchDescription:
+    def generate_launch_description(self, replay_run_params: ReplayRunParams) -> LaunchDescription:
         print("replay_run_parms")
         twist_msg = {
             "linear": {"x": replay_run_params.params["x"]},
@@ -71,9 +66,7 @@ class Run:
 @analyze
 class Analyze:
     def test_cmd_vel(self):
-        msgs_it = mcap_ros2.reader.read_ros2_messages(
-            self.reader, topics=["/user/cmd_vel"]
-        )
+        msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=["/user/cmd_vel"])
 
         msgs = [msg for msg in msgs_it]
         assert len(msgs) == 1

@@ -1,3 +1,5 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc. All rights reserved
+# Proprietary. Any unauthorized copying, distribution, or modification of this software is strictly prohibited.
 from unittest.mock import Mock
 import socket
 
@@ -11,9 +13,7 @@ def test_unittest_results_to_xml():
     replay_result.testsRun = 2
     replay_result.failures = []
     replay_result.errors = []
-    replay_result.successes = [
-        Mock(name="test_case_1"), Mock(name="test_case_2")
-    ]
+    replay_result.successes = [Mock(name="test_case_1"), Mock(name="test_case_2")]
 
     # Customize test mocks to include annotations by directly setting __annotations__
     for success_test in replay_result.successes:
@@ -25,14 +25,13 @@ def test_unittest_results_to_xml():
             {
                 "result": replay_result,
                 "run_fixture_path": "/path/to/run_fixture",
-                "filtered_fixture_path": "/path/to/filtered_fixture"
+                "filtered_fixture_path": "/path/to/filtered_fixture",
             }
         ]
     }
 
     # Call the function
-    xml_tree = unittest_results_to_xml(
-        name="replay_test", test_results=test_results)
+    xml_tree = unittest_results_to_xml(name="replay_test", test_results=test_results)
 
     # Verify the XML structure and some content
     root = xml_tree.getroot()

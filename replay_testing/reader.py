@@ -1,3 +1,5 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc. All rights reserved
+# Proprietary. Any unauthorized copying, distribution, or modification of this software is strictly prohibited.
 import rosbag2_py
 from mcap_ros2.reader import make_reader, McapReader
 from mcap_ros2.decoder import DecoderFactory

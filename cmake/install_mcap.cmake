@@ -1,14 +1,17 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc. All rights reserved
+# Proprietary. Any unauthorized copying, distribution, or modification of this software is strictly prohibited.
 # Set the target path for the mcap binary
 set(MCAP_BINARY_PATH "/usr/local/bin/mcap")
 
 # Define a function to install the mcap binary if it doesn't exist
 function(install_mcap)
     message(STATUS "Checking for mcap binary at ${MCAP_BINARY_PATH}...")
-    
+
     if(NOT EXISTS ${MCAP_BINARY_PATH})
         message(STATUS "Downloading mcap binary...")
         execute_process(
-            COMMAND curl -L -o ${MCAP_BINARY_PATH} https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.47/mcap-linux-amd64
+            COMMAND curl -L -o ${MCAP_BINARY_PATH}
+            https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.47/mcap-linux-amd64
             RESULT_VARIABLE DOWNLOAD_RESULT
         )
 

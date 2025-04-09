@@ -13,7 +13,7 @@ Features include:
 
 Replay testing is simply a way to replay previously recorded data into your own set of ROS nodes. When you are iterating on a piece of code, it is typically much easier to develop it on your local machine rather than on robot. Therefore, if you are able to record that data on-robot first, and then replay locally, you get the best of both worlds!
 
-All robotics developers use replay testing in one form or another. This package just wraps many of the conventions into an easy executable. 
+All robotics developers use replay testing in one form or another. This package just wraps many of the conventions into an easy executable.
 
 ## Usage
 
@@ -24,10 +24,10 @@ ros2 run replay_testing replay_test [REPLAY_TEST_PATH]
 ```
 
 For other args:
+
 ```
 ros2 run replay_testing replay_test --help
 ```
-
 
 ### `colcon test` and CMake
 
@@ -48,7 +48,6 @@ endif()
 
 If you've set up your CI to persist artifact paths under `test_results`, you should see a `*.xunit.xml` file be produced based on the `REPLAY_TEST_PATH` you provided.
 
-
 ## Authoring Replay Tests
 
 Each replay test can be authored into its own file, like `my_replay_test.py`. We expose a set of Python decorators that you wrap each class for your test.
@@ -57,9 +56,9 @@ Replay testing has three distinct phases, **all of which are required to run a r
 
 ### Fixtures `@fixtures`
 
-For collecting and preparing your fixtures to be run against your launch specification. Duties include: 
+For collecting and preparing your fixtures to be run against your launch specification. Duties include:
 - Provides a mechanism for specifying your input fixtures (e.g. `lidar_data.mcap`)
-- Filtering out any expected output topics that will be produced from the `run` step. 
+- Filtering out any expected output topics that will be produced from the `run` step.
 - Produces a `filtered_fixture.mcap` asset that is used against the `run` step
 - Asserts that specified input topics are present
 - (Eventually) Provides ways to make your old data forwards compatible with updates to your robotics stack
@@ -73,7 +72,6 @@ class Fixtures:
     output_topics = ["/user/cmd_vel"]
 ```
 
-
 ### Run `@run`
 
 Specify a launch description that will run against the replayed fixture. Usage:
@@ -86,6 +84,7 @@ class Run:
 ```
 
 If you'd like to specify a parameter sweep, you can use the variant:
+
 ```python
 @run.parameterize(
     [
@@ -99,11 +98,11 @@ class Run:
       return LaunchDescription(" YOUR LAUNCH DESCRIPTION ")
 ```
 
-Parameterizing your `run` will result in the `analyze` step being run n-param times. 
+Parameterizing your `run` will result in the `analyze` step being run n-param times.
 
 #### QOS Overrides
 
-Depending on use 
+Depending on use
 
 ```python
 @run.default()
@@ -111,7 +110,6 @@ class Run:
     qos_overrides_yaml = "[PATH_TO_YAML]"
     ...rest of def
 ```
-
 
 ### Analyze `@analyze`
 
@@ -132,7 +130,7 @@ class Analyze:
         msgs = [msg for msg in msgs_it]
         assert len(msgs) == 1
         assert msgs[0].channel.topic == "/user/cmd_vel"
-``` 
+```
 
 ### Full Example
 
@@ -198,13 +196,31 @@ If you'd like to directly view the resulting replay results in tools like Foxglo
 /tmp/replay_testing/a00a98aa-7f24-45c6-9299-b6232dcd842d/cmd_vel_only/runs/default
 ```
 
-The guid here is dynamically generated, and within that directory you can find all of your run results under the `runs` subdirectory.
+The guide here is dynamically generated, and within that directory you can find all of your run results under the `runs` subdirectory.
+
+## Developing
+
+### Activating Code Standard Hooks
+
+[Pre-commit](https://pre-commit.com) hooks are provided to maintain code standards for this repository.
+
+1. If you do not have pre-commit installed, run `python3 -m pip install pre-commit`
+1. For preexisting repositories, you must run `pre-commit install` in that repository
+1. You can automatically install pre-commit for newly cloned repositories by running
+
+    ```
+ $ git config --global init.templateDir ~/.git-template
+    $ pre-commit init-templatedir ~/.git-template
+    pre-commit installed at /home/asottile/.git-template/hooks/pre-commit
+    ```
+
+Now all git commits will be automatically gated by the configured checks.
 
 ## FAQ
 
 > Why MCAP?
 
-We've built most of our internal tooling around Foxglove, which supports MCAP best. The Foxglove team has published a robust set of libraries for writing and reading MCAP that we've used successfully here. 
+We've built most of our internal tooling around Foxglove, which supports MCAP best. The Foxglove team has published a robust set of libraries for writing and reading MCAP that we've used successfully here.
 
 > Can this package support other forms of recorded data? E.g. *.db3
 

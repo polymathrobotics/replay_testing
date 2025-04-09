@@ -1,3 +1,5 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc. All rights reserved
+# Proprietary. Any unauthorized copying, distribution, or modification of this software is strictly prohibited.
 from .decorators.fixtures import fixtures
 from .decorators.run import run
 from .decorators.analyze import analyze
@@ -18,5 +20,5 @@ __all__ = [
     "McapFixture",
     "ReplayRunParams",
     "unittest_results_to_xml",
-    "get_logger"
+    "get_logger",
 ]

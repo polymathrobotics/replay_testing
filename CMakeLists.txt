@@ -1,3 +1,5 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc. All rights reserved
+# Proprietary. Any unauthorized copying, distribution, or modification of this software is strictly prohibited.
 cmake_minimum_required(VERSION 3.8)
 project(replay_testing)
 
@@ -46,4 +48,3 @@ if(BUILD_TESTING)
   # Dogfood it!
   add_replay_test(test/replay_tests/basic_replay.py)
 endif()
-

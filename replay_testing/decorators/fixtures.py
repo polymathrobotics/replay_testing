@@ -1,3 +1,5 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc. All rights reserved
+# Proprietary. Any unauthorized copying, distribution, or modification of this software is strictly prohibited.
 from ..models import ReplayTestingPhase, McapFixture
 
 
@@ -10,14 +12,10 @@ class fixtures:
 
     def __call__(self, cls):
         if not hasattr(cls, "input_topics"):
-            raise TypeError(
-                f"Class {cls.__name__} must define a 'input_topics' attribute."
-            )
+            raise TypeError(f"Class {cls.__name__} must define a 'input_topics' attribute.")
 
         if not isinstance(cls.input_topics, list):
-            raise TypeError(
-                f"Class {cls.__name} 'input_topics' attribute must be a list."
-            )
+            raise TypeError(f"Class {cls.__name} 'input_topics' attribute must be a list.")
 
         if not all(isinstance(topic, str) for topic in cls.input_topics):
             raise TypeError(
@@ -25,14 +23,10 @@ class fixtures:
             )
 
         if not hasattr(cls, "output_topics"):
-            raise TypeError(
-                f"Class {cls.__name__} must define a 'output_topics' attribute."
-            )
+            raise TypeError(f"Class {cls.__name__} must define a 'output_topics' attribute.")
 
         if not isinstance(cls.output_topics, list):
-            raise TypeError(
-                f"Class {cls.__name} 'output_topics' attribute must be a list."
-            )
+            raise TypeError(f"Class {cls.__name} 'output_topics' attribute must be a list.")
 
         if not all(isinstance(topic, str) for topic in cls.output_topics):
             raise TypeError(
@@ -40,9 +34,7 @@ class fixtures:
             )
 
         cls.fixture_list = self.fixture_list
-        cls.__annotations__["replay_testing_phase"] = (
-            ReplayTestingPhase.FIXTURES
-        )
+        cls.__annotations__["replay_testing_phase"] = ReplayTestingPhase.FIXTURES
         return cls
 
     @staticmethod

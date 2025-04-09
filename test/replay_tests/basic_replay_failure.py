@@ -1,3 +1,5 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc. All rights reserved
+# Proprietary. Any unauthorized copying, distribution, or modification of this software is strictly prohibited.
 from replay_testing import (
     fixtures,
     run,
@@ -45,9 +47,7 @@ class Run:
 @analyze
 class AnalyzeBasicReplay:
     def test_expected_failure(self):
-        msgs_it = mcap_ros2.reader.read_ros2_messages(
-            self.reader, topics=["/user/cmd_vel"]
-        )
+        msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=["/user/cmd_vel"])
 
         msgs = [msg for msg in msgs_it]
         assert len(msgs) == 1

@@ -1,3 +1,5 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc. All rights reserved
+# Proprietary. Any unauthorized copying, distribution, or modification of this software is strictly prohibited.
 import unittest
 
 from ..models import ReplayTestingPhase
@@ -14,9 +16,7 @@ def analyze(cls):
             if cls.__init__ is not object.__init__:
                 cls.__init__(self, *args, **kwargs)
 
-    WrappedAnalyze.__annotations__["replay_testing_phase"] = (
-        ReplayTestingPhase.ANALYZE
-    )
+    WrappedAnalyze.__annotations__["replay_testing_phase"] = ReplayTestingPhase.ANALYZE
     WrappedAnalyze.__annotations__["suite_name"] = cls.__name__
 
     return WrappedAnalyze

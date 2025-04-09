@@ -1,3 +1,5 @@
+# Copyright (c) 2025-present Polymath Robotics, Inc. All rights reserved
+# Proprietary. Any unauthorized copying, distribution, or modification of this software is strictly prohibited.
 from .models import McapFixture
 from .utils import find_mcap_files
 from pathlib import Path
@@ -19,9 +21,7 @@ class ReplayFixture:
         self.run_fixtures = []
         self.base_path = base_folder
         self.input_fixture = fixture
-        self.filtered_fixture = McapFixture(
-            path=self.base_path + "/filtered_fixture.mcap"
-        )
+        self.filtered_fixture = McapFixture(path=self.base_path + "/filtered_fixture.mcap")
 
     def cleanup_run_fixtures(self):
         for run_fixture in self.run_fixtures:
@@ -37,6 +37,4 @@ class ReplayFixture:
             run_fixture.path = new_path
 
     def initialize_run_reader(self):
-        self.run_fixture.reader = get_message_mcap_reader(
-            self.run_fixture.path
-        )
+        self.run_fixture.reader = get_message_mcap_reader(self.run_fixture.path)
