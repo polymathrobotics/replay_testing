@@ -4,35 +4,35 @@ variables:
   PACKAGE_NAME: replay_testing
 
 include:
-- project: 'polymathrobotics/ci/ci_templates'
-  ref: main
-  file: '/ros/ros2_package.impl.yml'
-- project: 'polymathrobotics/ci/ci_templates'
-  ref: main
-  file: '/ros/ros2_container/containerize.impl.yml'
-- project: 'polymathrobotics/ci/ci_templates'
-  ref: main
-  file: '/docker-bake/bake_with_vcs_import_arm64.impl.yml'
-- project: 'polymathrobotics/ci/ci_templates'
-  ref: main
-  file: '/common/rules.yml'
-- project: 'polymathrobotics/ci/ci_templates'
-  ref: main
-  file: '/common/stages.yml'
-- project: "polymathrobotics/ci/ci_templates"
-  ref: main
-  file: "/common/pre-commit.yml"
+  - project: "polymathrobotics/ci/ci_templates"
+    ref: main
+    file: "/ros/ros2_package.impl.yml"
+  - project: "polymathrobotics/ci/ci_templates"
+    ref: main
+    file: "/ros/ros2_container/containerize.impl.yml"
+  - project: "polymathrobotics/ci/ci_templates"
+    ref: main
+    file: "/docker-bake/bake_with_vcs_import_arm64.impl.yml"
+  - project: "polymathrobotics/ci/ci_templates"
+    ref: main
+    file: "/common/rules.yml"
+  - project: "polymathrobotics/ci/ci_templates"
+    ref: main
+    file: "/common/stages.yml"
+  - project: "polymathrobotics/ci/ci_templates"
+    ref: main
+    file: "/common/pre-commit.yml"
 
-build_and_test_replay_testing:
+build_and_test_bringup_nexus_host:
   image: registry.gitlab.com/polymathrobotics/polymath_core/amd64:humble
-  extends: .ros2_build_and_test
+  extends: .ros2_build_and_test_nexus_host
 
-eval_replay_testing:
+eval_bringup:
   image: registry.gitlab.com/polymathrobotics/polymath_core/amd64:humble
   extends: .ros2_evaluate
   needs:
-    - job: build_and_test_replay_testing
+    - job: build_and_test_bringup_nexus_host
       artifacts: true
   artifacts:
-      reports:
-        junit: $ARTIFACTS_PATH/test_results/test_results/$PACKAGE_NAME/*.xml
+    reports:
+      junit: $ARTIFACTS_PATH/test_results/test_results/$PACKAGE_NAME/*.xml
