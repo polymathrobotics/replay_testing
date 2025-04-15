@@ -21,6 +21,7 @@ from .reader import get_sequential_mcap_reader, get_message_mcap_reader
 from .models import McapFixture, ReplayRunParams
 from .junit_to_xml import unittest_results_to_xml
 from .logging_config import get_logger
+from .remote_fixtures import BaseFixture, NexusFixture
 
 
 __all__ = [
@@ -34,4 +35,6 @@ __all__ = [
     "ReplayRunParams",
     "unittest_results_to_xml",
     "get_logger",
+    "BaseFixture",
+    "NexusFixture",
 ]

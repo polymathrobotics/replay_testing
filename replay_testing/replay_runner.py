@@ -23,15 +23,10 @@ from pathlib import Path
 import launch
 from launch import LaunchDescription
 from launch.actions import (
-    IncludeLaunchDescription,
     ExecuteProcess,
     RegisterEventHandler,
 )
-
 from termcolor import colored
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import PathJoinSubstitution
-from launch_ros.substitutions import FindPackageShare
 from launch.event_handlers import OnProcessExit
 from launch.events import Shutdown
 
@@ -44,6 +39,7 @@ from .replay_fixture import ReplayFixture
 from .logging_config import get_logger
 from .replay_test_result import ReplayTestResult
 from .junit_to_xml import unittest_results_to_xml, write_xml_to_file, pretty_log_junit_xml
+from .remote_fixtures import BaseFixture
 
 _logger_ = get_logger()
 
@@ -122,19 +118,9 @@ class ReplayTestingRunner:
         # Launch description with the event handler
         return LaunchDescription(
             [
-                IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(
-                        PathJoinSubstitution(
-                            [
-                                FindPackageShare("mcap_recorder"),
-                                "launch/recorder.launch.py",
-                            ]
-                        )
-                    ),
-                    launch_arguments={
-                        "recording_directory": f"{Path(run_fixture.path).parent}",
-                        "mcap_filename": f"{Path(run_fixture.path).stem}",
-                    }.items(),
+                ExecuteProcess(
+                    cmd=["ros2", "bag", "record", "-s", "mcap", "-o", run_fixture.path, "--all"],
+                    output="screen",
                 ),
                 test_ld,
                 player_action,  # Add the MCAP playback action
@@ -154,6 +140,9 @@ class ReplayTestingRunner:
 
         # MCAP Assertions
         for fixture_item in fixture_cls.fixture_list:
+            if isinstance(fixture_item, BaseFixture):
+                fixture_item = fixture_item.download(self._replay_results_directory)
+
             assert os.path.exists(fixture_item.path), "Fixture path does not exist"
             assert os.path.splitext(fixture_item.path)[1] == ".mcap", (
                 "Fixture path is not an .mcap file"

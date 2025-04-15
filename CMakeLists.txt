@@ -61,4 +61,5 @@ if(BUILD_TESTING)
 
   # Dogfood it!
   add_replay_test(test/replay_tests/basic_replay.py)
+  add_replay_test(test/replay_tests/nexus_replay.py)
 endif()
