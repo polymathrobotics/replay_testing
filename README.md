@@ -54,7 +54,7 @@ Each replay test can be authored into its own file, like `my_replay_test.py`. We
 
 Replay testing has three distinct phases, **all of which are required to run a replay test**:
 
-### Fixtures `@fixtures`
+### Filter Fixtures `@fixtures`
 
 For collecting and preparing your fixtures to be run against your launch specification. Duties include:
 - Provides a mechanism for specifying your input fixtures (e.g. `lidar_data.mcap`)
@@ -67,9 +67,9 @@ Here is how you use it:
 
 ```python
 @fixtures.parameterize([McapFixture(path="/tmp/mcap/my_data.mcap")])
-class Fixtures:
-    input_topics = ["/vehicle/cmd_vel"]
-    output_topics = ["/user/cmd_vel"]
+class FilterFixtures:
+    required_input_topics = ["/vehicle/cmd_vel"]
+    expected_output_topics = ["/user/cmd_vel"]
 ```
 
 ### Run `@run`

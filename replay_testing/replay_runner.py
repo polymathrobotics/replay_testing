@@ -128,7 +128,7 @@ class ReplayTestingRunner:
             ]
         )
 
-    def fixtures(self) -> str:
+    def filter_fixtures(self) -> str:
         self._log_stage_start(ReplayTestingPhase.FIXTURES)
 
         # todo: Add exception handling
@@ -153,13 +153,24 @@ class ReplayTestingRunner:
 
             topic_types = reader.get_all_topics_and_types()
 
+            required_input_topics = (
+                fixture.required_input_topics
+                if hasattr(fixture, "required_input_topics")
+                else fixture.input_topics
+            )
+            expected_output_topics = (
+                fixture.expected_output_topics
+                if hasattr(fixture, "expected_output_topics")
+                else fixture.output_topics
+            )
+
             input_topics_present = []
             for topic_type in topic_types:
-                if topic_type.name in fixture.input_topics:
+                if topic_type.name in required_input_topics:
                     input_topics_present.append(topic_type.name)
 
-            if set(input_topics_present) != set(fixture.input_topics):
-                diff = difflib.ndiff(input_topics_present, fixture.input_topics)
+            if set(input_topics_present) != set(required_input_topics):
+                diff = difflib.ndiff(input_topics_present, required_input_topics)
                 diff_str = "\n".join(diff)
                 _logger_.error(f"Input topics do not match. Diff: {diff_str}")
                 raise AssertionError("Input topics do not match. Check logs for more information")
@@ -174,7 +185,7 @@ class ReplayTestingRunner:
             filter_mcap(
                 replay_fixture.input_fixture.path,
                 replay_fixture.filtered_fixture.path,
-                fixture.output_topics,
+                expected_output_topics,
             )
 
             self._replay_fixtures.append(replay_fixture)

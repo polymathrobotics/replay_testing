@@ -31,9 +31,9 @@ cmd_vel_only_fixture = (
 
 
 @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
-class Fixtures:
-    input_topics = ["/vehicle/cmd_vel"]
-    output_topics = ["/user/cmd_vel"]
+class FilterFixtures:
+    required_input_topics = ["/vehicle/cmd_vel"]
+    expected_output_topics = ["/user/cmd_vel"]
 
 
 @run.default()

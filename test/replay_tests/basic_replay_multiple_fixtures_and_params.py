@@ -41,8 +41,8 @@ cmd_vel_only_2_fixture = os.path.join(replay_testing_dir, "test", "fixtures", "c
     ]
 )
 class Fixtures:
-    input_topics = ["/vehicle/cmd_vel"]
-    output_topics = ["/user/cmd_vel"]
+    required_input_topics = ["/vehicle/cmd_vel"]
+    expected_output_topics = ["/user/cmd_vel"]
 
 
 @run.parameterize(

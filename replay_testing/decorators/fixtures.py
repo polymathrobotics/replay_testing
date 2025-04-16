@@ -14,6 +14,9 @@
 #
 
 from ..models import ReplayTestingPhase, McapFixture
+from ..logging_config import get_logger
+
+_logger_ = get_logger()
 
 
 class fixtures:
@@ -23,28 +26,25 @@ class fixtures:
         # If args/kwargs are provided, treat them as parameters
         self.fixture_list = kwargs.get("fixture_list", None)
 
+    def validate_class_variable(self, cls, prop: str, deprecated_variable: str):
+        if hasattr(cls, deprecated_variable):
+            _logger_.warning(
+                f"Class {cls.__name__} '{prop}' attribute is deprecated. See docs for updated usage."
+            )
+            return
+
+        if not hasattr(cls, prop):
+            raise TypeError(f"Class {cls.__name__} must define a '{prop}' attribute.")
+
+        if not isinstance(getattr(cls, prop), list):
+            raise TypeError(f"Class {cls.__name} '{prop}' attribute must be a list.")
+
+        if not all(isinstance(topic, str) for topic in getattr(cls, prop)):
+            raise TypeError(f"Class {cls.__name} '{prop}' attribute must be a list of strings.")
+
     def __call__(self, cls):
-        if not hasattr(cls, "input_topics"):
-            raise TypeError(f"Class {cls.__name__} must define a 'input_topics' attribute.")
-
-        if not isinstance(cls.input_topics, list):
-            raise TypeError(f"Class {cls.__name} 'input_topics' attribute must be a list.")
-
-        if not all(isinstance(topic, str) for topic in cls.input_topics):
-            raise TypeError(
-                f"Class {cls.__name} 'input_topics' attribute must be a list of strings."
-            )
-
-        if not hasattr(cls, "output_topics"):
-            raise TypeError(f"Class {cls.__name__} must define a 'output_topics' attribute.")
-
-        if not isinstance(cls.output_topics, list):
-            raise TypeError(f"Class {cls.__name} 'output_topics' attribute must be a list.")
-
-        if not all(isinstance(topic, str) for topic in cls.output_topics):
-            raise TypeError(
-                f"Class {cls.__name} 'input_topics' attribute must be a list of strings."
-            )
+        self.validate_class_variable(cls, "required_input_topics", "input_topics")
+        self.validate_class_variable(cls, "expected_output_topics", "output_topics")
 
         cls.fixture_list = self.fixture_list
         cls.__annotations__["replay_testing_phase"] = ReplayTestingPhase.FIXTURES
