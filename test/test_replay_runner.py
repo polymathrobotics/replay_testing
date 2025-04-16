@@ -45,12 +45,12 @@ def test_fixtures():
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        input_topics = ["/vehicle/cmd_vel"]
-        output_topics = []
+        required_input_topics = ["/vehicle/cmd_vel"]
+        expected_output_topics = []
 
     test_module.Fixtures = Fixtures
     runner = ReplayTestingRunner(test_module)
-    replay_fixtures = runner.fixtures()
+    replay_fixtures = runner.filter_fixtures()
 
     # Assert
     assert len(replay_fixtures) == 1
@@ -69,14 +69,14 @@ def test_fixtures_raises_err():
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        input_topics = ["/vehicle/cmd_vel", "/does_not_exist"]
-        output_topics = []
+        required_input_topics = ["/vehicle/cmd_vel", "/does_not_exist"]
+        expected_output_topics = []
 
     test_module.Fixtures = Fixtures
     runner = ReplayTestingRunner(test_module)
 
     with pytest.raises(AssertionError):
-        runner.fixtures()
+        runner.filter_fixtures()
 
 
 def test_run():
@@ -84,8 +84,8 @@ def test_run():
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        input_topics = ["/vehicle/cmd_vel"]
-        output_topics = ["/user/cmd_vel"]
+        required_input_topics = ["/vehicle/cmd_vel"]
+        expected_output_topics = ["/user/cmd_vel"]
 
     @run.default()
     class Run:
@@ -111,7 +111,7 @@ def test_run():
     test_module.Run = Run
     runner = ReplayTestingRunner(test_module)
 
-    runner.fixtures()
+    runner.filter_fixtures()
     replay_fixtures = runner.run()
 
     # Assert
@@ -138,8 +138,8 @@ def test_analyze():
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        input_topics = ["/vehicle/cmd_vel"]
-        output_topics = ["/user/cmd_vel"]
+        required_input_topics = ["/vehicle/cmd_vel"]
+        expected_output_topics = ["/user/cmd_vel"]
 
     @run.default()
     class Run:
@@ -175,7 +175,7 @@ def test_analyze():
     test_module.Analyze = Analyze
     runner = ReplayTestingRunner(test_module)
 
-    runner.fixtures()
+    runner.filter_fixtures()
     runner.run()
     exit_code, _ = runner.analyze()
     assert exit_code == 0
@@ -188,8 +188,8 @@ def test_failed_analyze():
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        input_topics = ["/vehicle/cmd_vel"]
-        output_topics = ["/user/cmd_vel"]
+        required_input_topics = ["/vehicle/cmd_vel"]
+        expected_output_topics = ["/user/cmd_vel"]
 
     @run.default()
     class Run:
@@ -221,7 +221,7 @@ def test_failed_analyze():
     test_module.Analyze = Analyze
     runner = ReplayTestingRunner(test_module)
 
-    runner.fixtures()
+    runner.filter_fixtures()
     runner.run()
     exit_code, _ = runner.analyze(write_junit=False)
     assert exit_code == 1
@@ -239,8 +239,8 @@ def test_multiple_fixtures():
         ]
     )
     class Fixtures:
-        input_topics = ["/vehicle/cmd_vel"]
-        output_topics = ["/user/cmd_vel"]
+        required_input_topics = ["/vehicle/cmd_vel"]
+        expected_output_topics = ["/user/cmd_vel"]
 
     @run.default()
     class Run:
@@ -276,7 +276,7 @@ def test_multiple_fixtures():
     test_module.Analyze = Analyze
     runner = ReplayTestingRunner(test_module)
 
-    replay_fixtures = runner.fixtures()
+    replay_fixtures = runner.filter_fixtures()
     assert len(replay_fixtures) == 2
     assert len(replay_fixtures[0].run_fixtures) == 0
     assert len(replay_fixtures[1].run_fixtures) == 0
@@ -297,8 +297,8 @@ def test_parametric_sweep():
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        input_topics = ["/vehicle/cmd_vel"]
-        output_topics = ["/user/cmd_vel"]
+        required_input_topics = ["/vehicle/cmd_vel"]
+        expected_output_topics = ["/user/cmd_vel"]
 
     @run.parameterize(
         [
@@ -346,7 +346,7 @@ def test_parametric_sweep():
     test_module.Analyze = Analyze
     runner = ReplayTestingRunner(test_module)
 
-    runner.fixtures()
+    runner.filter_fixtures()
     replay_fixtures = runner.run()
     exit_code, _ = runner.analyze()
     assert exit_code == 0

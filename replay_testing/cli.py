@@ -94,7 +94,7 @@ def run(parser, args):
 
     runner = ReplayTestingRunner(test_module)
 
-    runner.fixtures()
+    runner.filter_fixtures()
     runner.run()
     exit_code, junit_xml_path = runner.analyze()
 

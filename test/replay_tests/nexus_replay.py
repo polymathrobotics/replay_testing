@@ -22,8 +22,8 @@ import mcap_ros2.reader
 
 @fixtures.parameterize([NexusFixture(path="generic/cmd_vel_only.mcap")])
 class Fixtures:
-    input_topics = ["/vehicle/cmd_vel"]
-    output_topics = ["/user/cmd_vel"]
+    required_input_topics = ["/vehicle/cmd_vel"]
+    expected_output_topics = ["/user/cmd_vel"]
 
 
 @run.default()
