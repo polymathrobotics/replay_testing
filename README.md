@@ -36,7 +36,7 @@ This package exposes CMake you can use for running replay tests as part of your 
 To use:
 
 ```cmake
-find_pacakage(replay_testing REQUIRED)
+find_package(replay_testing REQUIRED)
 
 ..
 
