@@ -30,7 +30,7 @@ class NexusFixture(BaseFixture):
 
     NEXUS_CI_USERNAME = os.getenv("NEXUS_CI_USERNAME", "")
     NEXUS_CI_PASSWORD = os.getenv("NEXUS_CI_PASSWORD", "")
-    NEXUS_SERVER = os.getenv("NEXUS_SERVER", "https://sfo2-data-nexus01.corp.polymathrobotics.dev")
+    NEXUS_SERVER = os.getenv("NEXUS_SERVER", "")
     NEXUS_REPOSITORY = os.getenv("NEXUS_REPOSITORY", "rosbag-hosted")
 
     def __init__(self, path: str):
