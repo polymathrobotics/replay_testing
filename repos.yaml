@@ -1,5 +1,0 @@
-repositories:
-  replay_testing:
-    type: git
-    url: git@gitlab.com:polymathrobotics/replay_testing.git
-    version: main

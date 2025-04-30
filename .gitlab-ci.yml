@@ -1,38 +1,26 @@
-variables:
-  REPOS_FILE: repos.yaml
-  VCS_ARGS: --recursive
-  PACKAGE_NAME: replay_testing
+---
+
+stages:
+  - build
+  - test
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
 include:
-  - project: "polymathrobotics/ci/ci_templates"
-    ref: main
-    file: "/ros/ros2_package.impl.yml"
-  - project: "polymathrobotics/ci/ci_templates"
-    ref: main
-    file: "/ros/ros2_container/containerize.impl.yml"
-  - project: "polymathrobotics/ci/ci_templates"
-    ref: main
-    file: "/docker-bake/bake_with_vcs_import_arm64.impl.yml"
-  - project: "polymathrobotics/ci/ci_templates"
-    ref: main
-    file: "/common/rules.yml"
-  - project: "polymathrobotics/ci/ci_templates"
-    ref: main
-    file: "/common/stages.yml"
-  - project: "polymathrobotics/ci/ci_templates"
-    ref: main
-    file: "/common/pre-commit.yml"
+  - component: gitlab.com/polymathrobotics/polymath_core/pre-commit@ci-1.0
+  - component: gitlab.com/polymathrobotics/polymath_core/ros2-package@ci-1.0
+    inputs:
+      base_image: docker.io/polymathrobotics/ros:humble-builder-ubuntu
 
-build_and_test_bringup_nexus_host:
-  image: registry.gitlab.com/polymathrobotics/polymath_core/amd64:humble
-  extends: .ros2_build_and_test_nexus_host
-
-eval_bringup:
-  image: registry.gitlab.com/polymathrobotics/polymath_core/amd64:humble
-  extends: .ros2_evaluate
-  needs:
-    - job: build_and_test_bringup_nexus_host
-      artifacts: true
-  artifacts:
-    reports:
-      junit: $ARTIFACTS_PATH/test_results/test_results/$PACKAGE_NAME/*.xml
+build_and_test:
+  extends: .ros2_build_and_test
+  variables:
+    WORKSPACE: $CI_PROJECT_DIR
+    ARTIFACTS_DEST: .ci/artifacts
+    PACKAGES: ""
+    USE_NEXUS: true
+    RUNNER: data
