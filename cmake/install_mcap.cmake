@@ -14,36 +14,33 @@
 # limitations under the License.
 #
 
-# Set the target path for the mcap binary
-set(MCAP_BINARY_PATH "/usr/local/bin/mcap")
+include(FetchContent)
 
-# Define a function to install the mcap binary if it doesn't exist
-function(install_mcap)
-    message(STATUS "Checking for mcap binary at ${MCAP_BINARY_PATH}...")
+find_program(MCAP_BINARY mcap)
+if(MCAP_BINARY)
+    message(STATUS "mcap binary found at ${MCAP_BINARY}, no need to download")
+else()
+    message(STATUS "downloading mcap binary...")
 
-    if(NOT EXISTS ${MCAP_BINARY_PATH})
-        message(STATUS "Downloading mcap binary...")
-        execute_process(
-            COMMAND curl -L -o ${MCAP_BINARY_PATH}
-            https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.47/mcap-linux-amd64
-            RESULT_VARIABLE DOWNLOAD_RESULT
-        )
-
-        if(NOT ${DOWNLOAD_RESULT} EQUAL 0)
-            message(FATAL_ERROR "Failed to download the mcap binary.")
-        endif()
-
-        execute_process(
-            COMMAND chmod +x ${MCAP_BINARY_PATH}
-            RESULT_VARIABLE CHMOD_RESULT
-        )
-
-        if(NOT ${CHMOD_RESULT} EQUAL 0)
-            message(FATAL_ERROR "Failed to set executable permissions on the mcap binary.")
-        endif()
-
-        message(STATUS "mcap binary installed successfully.")
-    else()
-        message(STATUS "mcap binary already exists, skipping download.")
+    if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+        set(MCAP_ARCH "amd64")
+    elseif(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "arm64")
+        set(MCAP_ARCH "arm64")
     endif()
-endfunction()
+    set(binary_name "mcap-linux-${MCAP_ARCH}")
+
+    fetchcontent_declare(
+        mcap_binary
+        URL https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.47/${binary_name}
+        DOWNLOAD_NO_EXTRACT true
+    )
+    fetchcontent_populate(mcap_binary)
+    message(STATUS "Successfully downloaded: " ${mcap_binary_SOURCE_DIR})
+
+    install(
+        PROGRAMS ${mcap_binary_SOURCE_DIR}/${binary_name}
+        DESTINATION bin
+        RENAME mcap
+        PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
+    )
+endif()
