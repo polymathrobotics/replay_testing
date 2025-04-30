@@ -13,8 +13,8 @@ workflow:
 include:
   - component: gitlab.com/polymathrobotics/polymath_core/pre-commit@ci-1.0
   - component: gitlab.com/polymathrobotics/polymath_core/ros2-package@ci-1.0
-    inputs:
-      base_image: docker.io/polymathrobotics/ros:humble-builder-ubuntu
+    # inputs:
+    #   base_image: docker.io/polymathrobotics/ros:humble-builder-ubuntu
 
 build_and_test:
   extends: .ros2_build_and_test
@@ -23,4 +23,3 @@ build_and_test:
     ARTIFACTS_DEST: .ci/artifacts
     PACKAGES: ""
     USE_NEXUS: true
-    RUNNER: data
