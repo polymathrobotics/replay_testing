@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>replay_testing</name>
   <version>0.0.1</version>
   <description>A testing library and CLI for replaying ROS nodes.</description>
-
-  <author email="troy@polymathrobotics.com">Troy Gibb</author>
   <maintainer email="troy@polymathrobotics.com">Troy Gibb</maintainer>
+  <maintainer email="emerson@polymathrobotics.com">Emerson Knapp</maintainer>
   <license>Apache License 2.0</license>
+  <author email="troy@polymathrobotics.com">Troy Gibb</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
