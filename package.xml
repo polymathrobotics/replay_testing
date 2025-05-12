@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>replay_testing</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>A testing library and CLI for replaying ROS nodes.</description>
   <maintainer email="troy@polymathrobotics.com">Troy Gibb</maintainer>
   <maintainer email="emerson@polymathrobotics.com">Emerson Knapp</maintainer>
