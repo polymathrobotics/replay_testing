@@ -52,6 +52,9 @@ ament_package(
 
 # Define test dependencies
 if(BUILD_TESTING)
+  find_package(ament_cmake_xmllint REQUIRED)
+  ament_xmllint()
+
   include(cmake/add_replay_test.cmake)
 
   find_package(ament_cmake_pytest REQUIRED)
