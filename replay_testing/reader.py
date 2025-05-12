@@ -14,8 +14,8 @@
 #
 
 import rosbag2_py
-from mcap_ros2.reader import make_reader, McapReader
 from mcap_ros2.decoder import DecoderFactory
+from mcap_ros2.reader import McapReader, make_reader
 
 # TODO: Figure out how to consolidate the two readers
 

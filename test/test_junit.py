@@ -13,8 +13,8 @@
 # limitations under the License.
 #
 
-from unittest.mock import Mock
 import socket
+from unittest.mock import Mock
 
 from replay_testing.junit_to_xml import unittest_results_to_xml
 from replay_testing.replay_test_result import ReplayTestResult

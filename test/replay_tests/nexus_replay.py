@@ -13,11 +13,11 @@
 # limitations under the License.
 #
 
-from replay_testing import fixtures, run, analyze, NexusFixture
+import mcap_ros2.reader
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
-import mcap_ros2.reader
+from replay_testing import NexusFixture, analyze, fixtures, run
 
 
 @fixtures.parameterize([NexusFixture(path="generic/cmd_vel_only.mcap")])

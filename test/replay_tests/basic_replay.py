@@ -13,17 +13,18 @@
 # limitations under the License.
 #
 
-from replay_testing import (
-    fixtures,
-    run,
-    analyze,
-    McapFixture,
-)
+import pathlib
+
+import mcap_ros2.reader
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
-import mcap_ros2.reader
-import pathlib
+from replay_testing import (
+    McapFixture,
+    analyze,
+    fixtures,
+    run,
+)
 
 cmd_vel_only_fixture = (
     pathlib.Path(__file__).parent.parent / "fixtures" / "cmd_vel_only.mcap"

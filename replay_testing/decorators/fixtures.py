@@ -13,8 +13,8 @@
 # limitations under the License.
 #
 
-from ..models import ReplayTestingPhase, McapFixture
 from ..logging_config import get_logger
+from ..models import McapFixture, ReplayTestingPhase
 
 _logger_ = get_logger()
 

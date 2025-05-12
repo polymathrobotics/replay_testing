@@ -13,26 +13,26 @@
 # limitations under the License.
 #
 
-import types
+import json
 import os
+import types
+
+import mcap_ros2.reader
 import pytest
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
-import mcap_ros2.reader
-import json
-from ament_index_python.packages import get_package_share_directory
 
 from replay_testing import (
-    ReplayTestingRunner,
-    fixtures,
-    get_sequential_mcap_reader,
-    run,
-    get_message_mcap_reader,
-    analyze,
     McapFixture,
     ReplayRunParams,
+    ReplayTestingRunner,
+    analyze,
+    fixtures,
+    get_message_mcap_reader,
+    get_sequential_mcap_reader,
+    run,
 )
-
 
 replay_testing_dir = get_package_share_directory("replay_testing")
 

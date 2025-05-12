@@ -13,33 +13,31 @@
 # limitations under the License.
 #
 
+import difflib
 import inspect
 import os
-import difflib
-
-
+import unittest
 import uuid
 from pathlib import Path
+
 import launch
 from launch import LaunchDescription
 from launch.actions import (
     ExecuteProcess,
     RegisterEventHandler,
 )
-from termcolor import colored
 from launch.event_handlers import OnProcessExit
 from launch.events import Shutdown
+from termcolor import colored
 
-import unittest
-
-from .reader import get_sequential_mcap_reader, get_message_mcap_reader
-from .models import ReplayTestingPhase, McapFixture
 from .filter import filter_mcap
-from .replay_fixture import ReplayFixture
+from .junit_to_xml import pretty_log_junit_xml, unittest_results_to_xml, write_xml_to_file
 from .logging_config import get_logger
-from .replay_test_result import ReplayTestResult
-from .junit_to_xml import unittest_results_to_xml, write_xml_to_file, pretty_log_junit_xml
+from .models import McapFixture, ReplayTestingPhase
+from .reader import get_message_mcap_reader, get_sequential_mcap_reader
 from .remote_fixtures import BaseFixture
+from .replay_fixture import ReplayFixture
+from .replay_test_result import ReplayTestResult
 
 _logger_ = get_logger()
 

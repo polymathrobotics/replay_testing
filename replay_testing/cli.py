@@ -20,8 +20,8 @@ import argparse
 import importlib.util
 import logging
 import os
-import sys
 import shutil
+import sys
 
 from replay_testing import ReplayTestingRunner, get_logger
 

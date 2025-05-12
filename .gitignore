@@ -1,5 +1,4 @@
-.pytest_cache
-**__pycache__**
-
+# Python
+.pytest_cache/
+__pycache__/
 *.egg-info
-build

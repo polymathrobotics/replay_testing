@@ -13,14 +13,13 @@
 # limitations under the License.
 #
 
-import os
 import base64
+import os
 import subprocess
 
-
-from .base_fixture import BaseFixture
-from ..models import McapFixture
 from ..logging_config import get_logger
+from ..models import McapFixture
+from .base_fixture import BaseFixture
 
 _logger_ = get_logger()
 

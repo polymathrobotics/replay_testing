@@ -14,11 +14,13 @@
 #
 
 import os
-import pytest
 import sys
-from replay_testing.cli import main
-from ament_index_python.packages import get_package_share_directory
 import xml.etree.ElementTree as ET
+
+import pytest
+from ament_index_python.packages import get_package_share_directory
+
+from replay_testing.cli import main
 
 replay_testing_dir = get_package_share_directory("replay_testing")
 

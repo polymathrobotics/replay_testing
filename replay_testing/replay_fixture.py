@@ -13,12 +13,12 @@
 # limitations under the License.
 #
 
-from .models import McapFixture
-from .utils import find_mcap_files
-from pathlib import Path
 import shutil
+from pathlib import Path
 
+from .models import McapFixture
 from .reader import get_message_mcap_reader
+from .utils import find_mcap_files
 
 # Class responsible for managing all replay fixtures
 

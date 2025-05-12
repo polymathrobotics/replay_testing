@@ -13,20 +13,21 @@
 # limitations under the License.
 #
 
-from replay_testing import (
-    fixtures,
-    run,
-    analyze,
-    McapFixture,
-    ReplayRunParams,
-)
+import json
+import os
+
+import mcap_ros2.reader
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
-import json
-import mcap_ros2.reader
-from ament_index_python.packages import get_package_share_directory
-import os
+from replay_testing import (
+    McapFixture,
+    ReplayRunParams,
+    analyze,
+    fixtures,
+    run,
+)
 
 replay_testing_dir = get_package_share_directory("replay_testing")
 

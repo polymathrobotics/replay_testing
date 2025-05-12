@@ -15,7 +15,7 @@
 
 import inspect
 
-from ..models import ReplayTestingPhase, ReplayRunParams
+from ..models import ReplayRunParams, ReplayTestingPhase
 
 
 class run:

@@ -13,11 +13,11 @@
 # limitations under the License.
 #
 
-from pydantic import BaseModel
+from enum import Enum
 from typing import Optional
 
 from mcap_ros2.reader import McapReader
-from enum import Enum
+from pydantic import BaseModel
 
 
 class ReplayTestingPhase(Enum):

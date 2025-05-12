@@ -13,9 +13,10 @@
 # limitations under the License.
 #
 
-import xml.etree.ElementTree as ET
 import datetime
 import socket
+import xml.etree.ElementTree as ET
+
 from termcolor import colored
 
 from .logging_config import get_logger
