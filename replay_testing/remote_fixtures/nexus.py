@@ -27,10 +27,10 @@ _logger_ = get_logger()
 class NexusFixture(BaseFixture):
     """Fixture provider that downloads MCAP files from Nexus repository."""
 
-    NEXUS_CI_USERNAME = os.getenv("NEXUS_CI_USERNAME", "")
-    NEXUS_CI_PASSWORD = os.getenv("NEXUS_CI_PASSWORD", "")
-    NEXUS_SERVER = os.getenv("NEXUS_SERVER", "")
-    NEXUS_REPOSITORY = os.getenv("NEXUS_REPOSITORY", "rosbag-hosted")
+    NEXUS_CI_USERNAME = os.getenv('NEXUS_CI_USERNAME', '')
+    NEXUS_CI_PASSWORD = os.getenv('NEXUS_CI_PASSWORD', '')
+    NEXUS_SERVER = os.getenv('NEXUS_SERVER', '')
+    NEXUS_REPOSITORY = os.getenv('NEXUS_REPOSITORY', 'rosbag-hosted')
 
     def __init__(self, path: str):
         self.nexus_path = path
@@ -43,38 +43,38 @@ class NexusFixture(BaseFixture):
             to downloaded files
         """
 
-        if self.NEXUS_CI_USERNAME == "ci":
+        if self.NEXUS_CI_USERNAME == 'ci':
             decoded_password = base64.b64decode(self.NEXUS_CI_PASSWORD).decode().strip()
         else:
             decoded_password = self.NEXUS_CI_PASSWORD
-        _logger_.info(f"NEXUS_SERVER: {self.NEXUS_SERVER}")
-        _logger_.info(f"NEXUS_REPOSITORY: {self.NEXUS_REPOSITORY}")
-        _logger_.info(f"Downloading {self.nexus_path} to {destination_folder}")
+        _logger_.info(f'NEXUS_SERVER: {self.NEXUS_SERVER}')
+        _logger_.info(f'NEXUS_REPOSITORY: {self.NEXUS_REPOSITORY}')
+        _logger_.info(f'Downloading {self.nexus_path} to {destination_folder}')
 
         server = self.NEXUS_SERVER
         repo = self.NEXUS_REPOSITORY
         username = self.NEXUS_CI_USERNAME
 
-        nexus_filename = self.nexus_path.split("/")[-1]
+        nexus_filename = self.nexus_path.split('/')[-1]
 
         curl_command = [
-            "curl",
-            "-v",
-            "-u",
-            f"{username}:{decoded_password}",
-            "-sL",
-            "-o",
-            f"{destination_folder}/{nexus_filename}",
-            f"{server}/repository/{repo}/{self.nexus_path}",
+            'curl',
+            '-v',
+            '-u',
+            f'{username}:{decoded_password}',
+            '-sL',
+            '-o',
+            f'{destination_folder}/{nexus_filename}',
+            f'{server}/repository/{repo}/{self.nexus_path}',
         ]
 
         result = subprocess.run(curl_command, capture_output=True, text=True)
 
         if result.returncode == 0:
-            _logger_.info(f"Download successful: {destination_folder}/{nexus_filename}")
-            return McapFixture(path=f"{destination_folder}/{nexus_filename}")
+            _logger_.info(f'Download successful: {destination_folder}/{nexus_filename}')
+            return McapFixture(path=f'{destination_folder}/{nexus_filename}')
         else:
-            _logger_.error(f"Download failed for {self.nexus_path}")
-            _logger_.error(f"STDOUT: {result.stdout}")
-            _logger_.error(f"STDERR: {result.stderr}")
-            raise RuntimeError(f"Failed to download fixture from Nexus: {self.nexus_path}")
+            _logger_.error(f'Download failed for {self.nexus_path}')
+            _logger_.error(f'STDOUT: {result.stdout}')
+            _logger_.error(f'STDERR: {result.stderr}')
+            raise RuntimeError(f'Failed to download fixture from Nexus: {self.nexus_path}')

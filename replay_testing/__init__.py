@@ -24,16 +24,16 @@ from .remote_fixtures import BaseFixture, NexusFixture
 from .replay_runner import ReplayTestingRunner
 
 __all__ = [
-    "fixtures",
-    "run",
-    "analyze",
-    "ReplayTestingRunner",
-    "get_sequential_mcap_reader",
-    "get_message_mcap_reader",
-    "McapFixture",
-    "ReplayRunParams",
-    "unittest_results_to_xml",
-    "get_logger",
-    "BaseFixture",
-    "NexusFixture",
+    'fixtures',
+    'run',
+    'analyze',
+    'ReplayTestingRunner',
+    'get_sequential_mcap_reader',
+    'get_message_mcap_reader',
+    'McapFixture',
+    'ReplayRunParams',
+    'unittest_results_to_xml',
+    'get_logger',
+    'BaseFixture',
+    'NexusFixture',
 ]

@@ -1,11 +1,12 @@
 # Python rules for Polymath Code Standard - https://gitlab.com/polymathrobotics/polymath_code_standard
 # Synced from origin - DO NOT EDIT IN CONSUMING REPOSITORY
 
-line-length = 100
+line-length = 120
 indent-width = 4
 
 [format]
-quote-style = "double"
+preview = true
+quote-style = "single"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "lf"

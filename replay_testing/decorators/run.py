@@ -23,13 +23,11 @@ class run:
 
     def __init__(self, *args, **kwargs):
         # If args/kwargs are provided, treat them as parameters
-        self.parameters = kwargs.get("parameters", None)
+        self.parameters = kwargs.get('parameters', None)
 
     def __call__(self, cls):
-        if not hasattr(cls, "generate_launch_description"):
-            raise TypeError(
-                f"Class {cls.__name__} must define a 'generate_launch_description' method."
-            )
+        if not hasattr(cls, 'generate_launch_description'):
+            raise TypeError(f"Class {cls.__name__} must define a 'generate_launch_description' method.")
 
         original_method = cls.generate_launch_description
 
@@ -45,7 +43,7 @@ class run:
         # Attach parameters if they exist
         if self.parameters is not None:
             cls.parameters = self.parameters
-        cls.__annotations__["replay_testing_phase"] = ReplayTestingPhase.RUN
+        cls.__annotations__['replay_testing_phase'] = ReplayTestingPhase.RUN
         return cls
 
     @staticmethod
@@ -55,4 +53,4 @@ class run:
 
     @staticmethod
     def default():
-        return run(parameters=[ReplayRunParams(name="default", params={})])
+        return run(parameters=[ReplayRunParams(name='default', params={})])

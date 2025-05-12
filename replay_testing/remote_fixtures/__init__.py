@@ -16,4 +16,4 @@
 from .base_fixture import BaseFixture
 from .nexus import NexusFixture
 
-__all__ = ["BaseFixture", "NexusFixture"]
+__all__ = ['BaseFixture', 'NexusFixture']

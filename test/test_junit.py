@@ -26,45 +26,45 @@ def test_unittest_results_to_xml():
     replay_result.testsRun = 2
     replay_result.failures = []
     replay_result.errors = []
-    replay_result.successes = [Mock(name="test_case_1"), Mock(name="test_case_2")]
+    replay_result.successes = [Mock(name='test_case_1'), Mock(name='test_case_2')]
 
     # Customize test mocks to include annotations by directly setting __annotations__
     for success_test in replay_result.successes:
-        success_test.__annotations__ = {"suite_name": "suite_1"}
+        success_test.__annotations__ = {'suite_name': 'suite_1'}
 
     # Test input data for the function
     test_results = {
-        "test_fixture": [
+        'test_fixture': [
             {
-                "result": replay_result,
-                "run_fixture_path": "/path/to/run_fixture",
-                "filtered_fixture_path": "/path/to/filtered_fixture",
+                'result': replay_result,
+                'run_fixture_path': '/path/to/run_fixture',
+                'filtered_fixture_path': '/path/to/filtered_fixture',
             }
         ]
     }
 
     # Call the function
-    xml_tree = unittest_results_to_xml(name="replay_test", test_results=test_results)
+    xml_tree = unittest_results_to_xml(name='replay_test', test_results=test_results)
 
     # Verify the XML structure and some content
     root = xml_tree.getroot()
-    assert root.tag == "testsuites"
-    assert root.get("name") == "replay_test"
-    assert root.get("tests") == "2"
-    assert root.get("failures") == "0"
-    assert root.get("errors") == "0"
-    assert root.get("successes") == "2"
+    assert root.tag == 'testsuites'
+    assert root.get('name') == 'replay_test'
+    assert root.get('tests') == '2'
+    assert root.get('failures') == '0'
+    assert root.get('errors') == '0'
+    assert root.get('successes') == '2'
 
     # Check the first testsuite
-    testsuite = root.find("testsuite")
+    testsuite = root.find('testsuite')
     assert testsuite is not None
-    assert testsuite.get("name") == "replay_test_suite_1"
-    assert testsuite.get("tests") == "2"
-    assert testsuite.get("failures") == "0"
-    assert testsuite.get("errors") == "0"
-    assert testsuite.get("hostname") == socket.gethostname()
-    assert testsuite.get("timestamp") is not None
+    assert testsuite.get('name') == 'replay_test_suite_1'
+    assert testsuite.get('tests') == '2'
+    assert testsuite.get('failures') == '0'
+    assert testsuite.get('errors') == '0'
+    assert testsuite.get('hostname') == socket.gethostname()
+    assert testsuite.get('timestamp') is not None
 
     # Check each testcase in testsuite
-    testcases = testsuite.findall("testcase")
+    testcases = testsuite.findall('testcase')
     assert len(testcases) == 2

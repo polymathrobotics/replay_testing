@@ -21,6 +21,6 @@ def find_mcap_files(input_dir):
     mcap_files = []
     for root, dirs, files in os.walk(input_dir):
         for file in files:
-            if file.endswith(".mcap"):
+            if file.endswith('.mcap'):
                 mcap_files.append(os.path.join(root, file))
     return mcap_files

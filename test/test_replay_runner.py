@@ -34,18 +34,18 @@ from replay_testing import (
     run,
 )
 
-replay_testing_dir = get_package_share_directory("replay_testing")
+replay_testing_dir = get_package_share_directory('replay_testing')
 
-cmd_vel_only_fixture = os.path.join(replay_testing_dir, "test", "fixtures", "cmd_vel_only.mcap")
-cmd_vel_only_2_fixture = os.path.join(replay_testing_dir, "test", "fixtures", "cmd_vel_only_2.mcap")
+cmd_vel_only_fixture = os.path.join(replay_testing_dir, 'test', 'fixtures', 'cmd_vel_only.mcap')
+cmd_vel_only_2_fixture = os.path.join(replay_testing_dir, 'test', 'fixtures', 'cmd_vel_only_2.mcap')
 
 
 def test_fixtures():
-    test_module = types.ModuleType("test_module")
+    test_module = types.ModuleType('test_module')
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        required_input_topics = ["/vehicle/cmd_vel"]
+        required_input_topics = ['/vehicle/cmd_vel']
         expected_output_topics = []
 
     test_module.Fixtures = Fixtures
@@ -60,16 +60,16 @@ def test_fixtures():
     topics = reader.get_all_topics_and_types()
 
     assert len(topics) == 1
-    assert topics[0].name == "/vehicle/cmd_vel"
+    assert topics[0].name == '/vehicle/cmd_vel'
     return
 
 
 def test_fixtures_raises_err():
-    test_module = types.ModuleType("test_module")
+    test_module = types.ModuleType('test_module')
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        required_input_topics = ["/vehicle/cmd_vel", "/does_not_exist"]
+        required_input_topics = ['/vehicle/cmd_vel', '/does_not_exist']
         expected_output_topics = []
 
     test_module.Fixtures = Fixtures
@@ -80,32 +80,30 @@ def test_fixtures_raises_err():
 
 
 def test_run():
-    test_module = types.ModuleType("test_module")
+    test_module = types.ModuleType('test_module')
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        required_input_topics = ["/vehicle/cmd_vel"]
-        expected_output_topics = ["/user/cmd_vel"]
+        required_input_topics = ['/vehicle/cmd_vel']
+        expected_output_topics = ['/user/cmd_vel']
 
     @run.default()
     class Run:
         def generate_launch_description(self) -> LaunchDescription:
-            return LaunchDescription(
-                [
-                    ExecuteProcess(
-                        cmd=[
-                            "ros2",
-                            "topic",
-                            "pub",
-                            "/user/cmd_vel",
-                            "geometry_msgs/msg/Twist",
-                            "{linear: {x: 1.0}, angular: {z: 0.5}}",
-                        ],
-                        name="topic_pub",
-                        output="screen",
-                    )
-                ]
-            )
+            return LaunchDescription([
+                ExecuteProcess(
+                    cmd=[
+                        'ros2',
+                        'topic',
+                        'pub',
+                        '/user/cmd_vel',
+                        'geometry_msgs/msg/Twist',
+                        '{linear: {x: 1.0}, angular: {z: 0.5}}',
+                    ],
+                    name='topic_pub',
+                    output='screen',
+                )
+            ])
 
     test_module.Fixtures = Fixtures
     test_module.Run = Run
@@ -121,54 +119,52 @@ def test_run():
     topics = reader.get_all_topics_and_types()
     topic_names = [topic.name for topic in topics]
 
-    assert "/vehicle/cmd_vel" in topic_names
-    assert "/user/cmd_vel" in topic_names
+    assert '/vehicle/cmd_vel' in topic_names
+    assert '/user/cmd_vel' in topic_names
 
     msg_reader = get_message_mcap_reader(run_fixture.path)
-    msgs_it = mcap_ros2.reader.read_ros2_messages(msg_reader, topics=["/user/cmd_vel"])
+    msgs_it = mcap_ros2.reader.read_ros2_messages(msg_reader, topics=['/user/cmd_vel'])
 
     msgs = [msg for msg in msgs_it]
     assert len(msgs) == 1
-    assert msgs[0].channel.topic == "/user/cmd_vel"
+    assert msgs[0].channel.topic == '/user/cmd_vel'
     return
 
 
 def test_analyze():
-    test_module = types.ModuleType("test_module")
+    test_module = types.ModuleType('test_module')
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        required_input_topics = ["/vehicle/cmd_vel"]
-        expected_output_topics = ["/user/cmd_vel"]
+        required_input_topics = ['/vehicle/cmd_vel']
+        expected_output_topics = ['/user/cmd_vel']
 
     @run.default()
     class Run:
         def generate_launch_description(self) -> LaunchDescription:
-            return LaunchDescription(
-                [
-                    ExecuteProcess(
-                        cmd=[
-                            "ros2",
-                            "topic",
-                            "pub",
-                            "/user/cmd_vel",
-                            "geometry_msgs/msg/Twist",
-                            "{linear: {x: 1.0}, angular: {z: 0.5}}",
-                        ],
-                        name="topic_pub",
-                        output="screen",
-                    )
-                ]
-            )
+            return LaunchDescription([
+                ExecuteProcess(
+                    cmd=[
+                        'ros2',
+                        'topic',
+                        'pub',
+                        '/user/cmd_vel',
+                        'geometry_msgs/msg/Twist',
+                        '{linear: {x: 1.0}, angular: {z: 0.5}}',
+                    ],
+                    name='topic_pub',
+                    output='screen',
+                )
+            ])
 
     @analyze
     class Analyze:
         def test_cmd_vel(self):
-            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=["/user/cmd_vel"])
+            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
 
             msgs = [msg for msg in msgs_it]
             assert len(msgs) == 1
-            assert msgs[0].channel.topic == "/user/cmd_vel"
+            assert msgs[0].channel.topic == '/user/cmd_vel'
 
     test_module.Fixtures = Fixtures
     test_module.Run = Run
@@ -184,32 +180,30 @@ def test_analyze():
 
 
 def test_failed_analyze():
-    test_module = types.ModuleType("test_module")
+    test_module = types.ModuleType('test_module')
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        required_input_topics = ["/vehicle/cmd_vel"]
-        expected_output_topics = ["/user/cmd_vel"]
+        required_input_topics = ['/vehicle/cmd_vel']
+        expected_output_topics = ['/user/cmd_vel']
 
     @run.default()
     class Run:
         def generate_launch_description(self) -> LaunchDescription:
-            return LaunchDescription(
-                [
-                    ExecuteProcess(
-                        cmd=[
-                            "ros2",
-                            "topic",
-                            "pub",
-                            "/user/cmd_vel",
-                            "geometry_msgs/msg/Twist",
-                            "{linear: {x: 1.0}, angular: {z: 0.5}}",
-                        ],
-                        name="topic_pub",
-                        output="screen",
-                    )
-                ]
-            )
+            return LaunchDescription([
+                ExecuteProcess(
+                    cmd=[
+                        'ros2',
+                        'topic',
+                        'pub',
+                        '/user/cmd_vel',
+                        'geometry_msgs/msg/Twist',
+                        '{linear: {x: 1.0}, angular: {z: 0.5}}',
+                    ],
+                    name='topic_pub',
+                    output='screen',
+                )
+            ])
 
     @analyze
     class Analyze:
@@ -230,46 +224,42 @@ def test_failed_analyze():
 
 
 def test_multiple_fixtures():
-    test_module = types.ModuleType("test_module")
+    test_module = types.ModuleType('test_module')
 
-    @fixtures.parameterize(
-        [
-            McapFixture(path=cmd_vel_only_fixture),
-            McapFixture(path=cmd_vel_only_2_fixture),
-        ]
-    )
+    @fixtures.parameterize([
+        McapFixture(path=cmd_vel_only_fixture),
+        McapFixture(path=cmd_vel_only_2_fixture),
+    ])
     class Fixtures:
-        required_input_topics = ["/vehicle/cmd_vel"]
-        expected_output_topics = ["/user/cmd_vel"]
+        required_input_topics = ['/vehicle/cmd_vel']
+        expected_output_topics = ['/user/cmd_vel']
 
     @run.default()
     class Run:
         def generate_launch_description(self) -> LaunchDescription:
-            return LaunchDescription(
-                [
-                    ExecuteProcess(
-                        cmd=[
-                            "ros2",
-                            "topic",
-                            "pub",
-                            "/user/cmd_vel",
-                            "geometry_msgs/msg/Twist",
-                            "{linear: {x: 1.0}, angular: {z: 0.5}}",
-                        ],
-                        name="topic_pub",
-                        output="screen",
-                    )
-                ]
-            )
+            return LaunchDescription([
+                ExecuteProcess(
+                    cmd=[
+                        'ros2',
+                        'topic',
+                        'pub',
+                        '/user/cmd_vel',
+                        'geometry_msgs/msg/Twist',
+                        '{linear: {x: 1.0}, angular: {z: 0.5}}',
+                    ],
+                    name='topic_pub',
+                    output='screen',
+                )
+            ])
 
     @analyze
     class Analyze:
         def test_cmd_vel(self):
-            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=["/user/cmd_vel"])
+            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
 
             msgs = [msg for msg in msgs_it]
             assert len(msgs) == 1
-            assert msgs[0].channel.topic == "/user/cmd_vel"
+            assert msgs[0].channel.topic == '/user/cmd_vel'
 
     test_module.Fixtures = Fixtures
     test_module.Run = Run
@@ -293,53 +283,47 @@ def test_multiple_fixtures():
 
 
 def test_parametric_sweep():
-    test_module = types.ModuleType("test_module")
+    test_module = types.ModuleType('test_module')
 
     @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
-        required_input_topics = ["/vehicle/cmd_vel"]
-        expected_output_topics = ["/user/cmd_vel"]
+        required_input_topics = ['/vehicle/cmd_vel']
+        expected_output_topics = ['/user/cmd_vel']
 
-    @run.parameterize(
-        [
-            ReplayRunParams(name="run_1_twist_slow", params={"x": 1.0}),
-            ReplayRunParams(name="run_2_twist_fast", params={"x": 10.0}),
-        ]
-    )
+    @run.parameterize([
+        ReplayRunParams(name='run_1_twist_slow', params={'x': 1.0}),
+        ReplayRunParams(name='run_2_twist_fast', params={'x': 10.0}),
+    ])
     class Run:
-        def generate_launch_description(
-            self, replay_run_params: ReplayRunParams
-        ) -> LaunchDescription:
-            print("replay_run_parms")
+        def generate_launch_description(self, replay_run_params: ReplayRunParams) -> LaunchDescription:
+            print('replay_run_parms')
             twist_msg = {
-                "linear": {"x": replay_run_params.params["x"]},
-                "angular": {"z": 0.5},
+                'linear': {'x': replay_run_params.params['x']},
+                'angular': {'z': 0.5},
             }
-            return LaunchDescription(
-                [
-                    ExecuteProcess(
-                        cmd=[
-                            "ros2",
-                            "topic",
-                            "pub",
-                            "/user/cmd_vel",
-                            "geometry_msgs/msg/Twist",
-                            json.dumps(twist_msg),
-                        ],
-                        name="topic_pub",
-                        output="screen",
-                    )
-                ]
-            )
+            return LaunchDescription([
+                ExecuteProcess(
+                    cmd=[
+                        'ros2',
+                        'topic',
+                        'pub',
+                        '/user/cmd_vel',
+                        'geometry_msgs/msg/Twist',
+                        json.dumps(twist_msg),
+                    ],
+                    name='topic_pub',
+                    output='screen',
+                )
+            ])
 
     @analyze
     class Analyze:
         def test_cmd_vel(self):
-            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=["/user/cmd_vel"])
+            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
 
             msgs = [msg for msg in msgs_it]
             assert len(msgs) == 1
-            assert msgs[0].channel.topic == "/user/cmd_vel"
+            assert msgs[0].channel.topic == '/user/cmd_vel'
 
     test_module.Fixtures = Fixtures
     test_module.Run = Run

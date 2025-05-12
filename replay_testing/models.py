@@ -21,9 +21,9 @@ from pydantic import BaseModel
 
 
 class ReplayTestingPhase(Enum):
-    FIXTURES = "fixtures"
-    RUN = "run"
-    ANALYZE = "analyze"
+    FIXTURES = 'fixtures'
+    RUN = 'run'
+    ANALYZE = 'analyze'
 
 
 class ReplayRunParams(BaseModel):
