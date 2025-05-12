@@ -1,0 +1,39 @@
+---
+
+name: Build and test
+on:  # yamllint disable-line
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ros: humble
+            ubuntu: jammy
+          - ros: jazzy
+            ubuntu: noble
+          # - ros: kilted
+          #   ubuntu: noble-testing
+          - ros: rolling
+            ubuntu: noble
+    name: ROS 2 ${{ matrix.ros }}
+    container:
+      image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-${{ matrix.ubuntu }}:latest
+    env:
+      ROS_DISTRO: ${{ matrix.ros }}
+      PIP_BREAK_SYSTEM_PACKAGES: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          target-ros2-distro: ${{ matrix.ros }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: colcon-logs-${{ matrix.ros }}
+          path: ros_ws/log

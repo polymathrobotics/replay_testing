@@ -13,12 +13,12 @@
 # limitations under the License.
 #
 
-from .models import McapFixture
-from .utils import find_mcap_files
-from pathlib import Path
 import shutil
+from pathlib import Path
 
+from .models import McapFixture
 from .reader import get_message_mcap_reader
+from .utils import find_mcap_files
 
 # Class responsible for managing all replay fixtures
 
@@ -34,7 +34,7 @@ class ReplayFixture:
         self.run_fixtures = []
         self.base_path = base_folder
         self.input_fixture = fixture
-        self.filtered_fixture = McapFixture(path=self.base_path + "/filtered_fixture.mcap")
+        self.filtered_fixture = McapFixture(path=self.base_path + '/filtered_fixture.mcap')
 
     def cleanup_run_fixtures(self):
         for run_fixture in self.run_fixtures:
@@ -42,7 +42,7 @@ class ReplayFixture:
             # TODO(troy): cleanup this HACK
             mcap_files = find_mcap_files(mcap_folder)
             if len(mcap_files) == 0:
-                raise ValueError(f"No mcap files found in {mcap_folder}")
+                raise ValueError(f'No mcap files found in {mcap_folder}')
             mcap_file_path = mcap_files[0]
             new_path = shutil.move(mcap_file_path, Path(mcap_folder).parent)
             shutil.rmtree(mcap_folder)

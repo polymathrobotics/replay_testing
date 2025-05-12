@@ -13,8 +13,8 @@
 # limitations under the License.
 #
 
-from ..models import ReplayTestingPhase, McapFixture
 from ..logging_config import get_logger
+from ..models import McapFixture, ReplayTestingPhase
 
 _logger_ = get_logger()
 
@@ -24,13 +24,11 @@ class fixtures:
 
     def __init__(self, *args, **kwargs):
         # If args/kwargs are provided, treat them as parameters
-        self.fixture_list = kwargs.get("fixture_list", None)
+        self.fixture_list = kwargs.get('fixture_list', None)
 
     def validate_class_variable(self, cls, prop: str, deprecated_variable: str):
         if hasattr(cls, deprecated_variable):
-            _logger_.warning(
-                f"Class {cls.__name__} '{prop}' attribute is deprecated. See docs for updated usage."
-            )
+            _logger_.warning(f"Class {cls.__name__} '{prop}' attribute is deprecated. See docs for updated usage.")
             return
 
         if not hasattr(cls, prop):
@@ -43,11 +41,11 @@ class fixtures:
             raise TypeError(f"Class {cls.__name} '{prop}' attribute must be a list of strings.")
 
     def __call__(self, cls):
-        self.validate_class_variable(cls, "required_input_topics", "input_topics")
-        self.validate_class_variable(cls, "expected_output_topics", "output_topics")
+        self.validate_class_variable(cls, 'required_input_topics', 'input_topics')
+        self.validate_class_variable(cls, 'expected_output_topics', 'output_topics')
 
         cls.fixture_list = self.fixture_list
-        cls.__annotations__["replay_testing_phase"] = ReplayTestingPhase.FIXTURES
+        cls.__annotations__['replay_testing_phase'] = ReplayTestingPhase.FIXTURES
         return cls
 
     @staticmethod
