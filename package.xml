@@ -11,17 +11,19 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <exec_depend>launch</exec_depend>
   <exec_depend>mcap-ros2-support</exec_depend>
   <exec_depend>python3-pydantic</exec_depend>
   <exec_depend>python3-termcolor</exec_depend>
+  <!-- we never mention rclpy directly, but rosbag2_py in Humble doesn't specify its dependency properly -->
+  <exec_depend>rclpy</exec_depend>
   <exec_depend>rosbag2_py</exec_depend>
   <exec_depend>rosbag2_storage_mcap</exec_depend>
-  <exec_depend>launch</exec_depend>
 
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_index_python</test_depend>
-  <test_depend>python3-pytest</test_depend>
   <test_depend>python3-junitparser</test_depend>
+  <test_depend>python3-pytest</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
