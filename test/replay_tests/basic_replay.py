@@ -26,15 +26,13 @@ from replay_testing import (
     run,
 )
 
-cmd_vel_only_fixture = (
-    pathlib.Path(__file__).parent.parent / "fixtures" / "cmd_vel_only.mcap"
-).as_posix()
+cmd_vel_only_fixture = (pathlib.Path(__file__).parent.parent / 'fixtures' / 'cmd_vel_only.mcap').as_posix()
 
 
 @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
 class Fixtures:
-    required_input_topics = ["/vehicle/cmd_vel"]
-    expected_output_topics = ["/user/cmd_vel"]
+    required_input_topics = ['/vehicle/cmd_vel']
+    expected_output_topics = ['/user/cmd_vel']
 
 
 @run.default()
@@ -43,17 +41,17 @@ class Run:
         return LaunchDescription([
             ExecuteProcess(
                 cmd=[
-                    "ros2",
-                    "topic",
-                    "pub",
-                    "-r",
-                    "10",
-                    "/user/cmd_vel",
-                    "geometry_msgs/msg/Twist",
-                    "{linear: {x: 1.0}, angular: {z: 0.5}}",
+                    'ros2',
+                    'topic',
+                    'pub',
+                    '-r',
+                    '10',
+                    '/user/cmd_vel',
+                    'geometry_msgs/msg/Twist',
+                    '{linear: {x: 1.0}, angular: {z: 0.5}}',
                 ],
-                name="topic_pub",
-                output="screen",
+                name='topic_pub',
+                output='screen',
             )
         ])
 
@@ -61,8 +59,8 @@ class Run:
 @analyze
 class AnalyzeBasicReplay:
     def test_cmd_vel(self):
-        msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=["/user/cmd_vel"])
+        msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
 
         msgs = [msg for msg in msgs_it]
         assert len(msgs) >= 1
-        assert msgs[0].channel.topic == "/user/cmd_vel"
+        assert msgs[0].channel.topic == '/user/cmd_vel'
