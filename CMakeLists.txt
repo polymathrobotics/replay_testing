@@ -50,8 +50,8 @@ ament_package(
   CONFIG_EXTRAS "${PROJECT_NAME}-extras.cmake"
 )
 
-# Define test dependencies
-if(BUILD_TESTING)
+# TODO(troy): Once https://github.com/polymathrobotics/replay_testing/issues/2 is resolved, remove.
+if(BUILD_TESTING AND $ENV{USE_MCAP_PIP})
   find_package(ament_cmake_xmllint REQUIRED)
   ament_xmllint()
 
