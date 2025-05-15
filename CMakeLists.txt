@@ -50,19 +50,21 @@ ament_package(
   CONFIG_EXTRAS "${PROJECT_NAME}-extras.cmake"
 )
 
-# TODO(troy): Once https://github.com/polymathrobotics/replay_testing/issues/2 is resolved, remove.
-if(BUILD_TESTING AND $ENV{USE_MCAP_PIP})
-  find_package(ament_cmake_xmllint REQUIRED)
-  ament_xmllint()
+if(BUILD_TESTING)
+  # TODO(troy): Once https://github.com/polymathrobotics/replay_testing/issues/2 is resolved, remove.
+  if($ENV{USE_MCAP_PIP})
+    find_package(ament_cmake_xmllint REQUIRED)
+    ament_xmllint()
 
-  include(cmake/add_replay_test.cmake)
+    include(cmake/add_replay_test.cmake)
 
-  find_package(ament_cmake_pytest REQUIRED)
-  ament_add_pytest_test(pytest ${CMAKE_CURRENT_SOURCE_DIR}/test)
+    find_package(ament_cmake_pytest REQUIRED)
+    ament_add_pytest_test(pytest ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
-  add_replay_test(test/replay_tests/basic_replay.py)
+    add_replay_test(test/replay_tests/basic_replay.py)
 
-  if($ENV{USE_NEXUS})
-    add_replay_test(test/replay_tests/nexus_replay.py)
+    if($ENV{USE_NEXUS})
+      add_replay_test(test/replay_tests/nexus_replay.py)
+    endif()
   endif()
 endif()
