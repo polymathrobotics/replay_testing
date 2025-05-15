@@ -128,7 +128,7 @@ class Analyze:
         )
 
         msgs = [msg for msg in msgs_it]
-        assert len(msgs) == 1
+        assert len(msgs) >= 1
         assert msgs[0].channel.topic == "/user/cmd_vel"
 ```
 
@@ -164,6 +164,8 @@ class Run:
                         "ros2",
                         "topic",
                         "pub",
+                        "-r",
+                        "10",
                         "/user/cmd_vel",
                         "geometry_msgs/msg/Twist",
                         "{linear: {x: 1.0}, angular: {z: 0.5}}",
@@ -183,7 +185,7 @@ class AnalyzeBasicReplay:
         )
 
         msgs = [msg for msg in msgs_it]
-        assert len(msgs) == 1
+        assert len(msgs) >= 1
         assert msgs[0].channel.topic == "/user/cmd_vel"
 
 ```
