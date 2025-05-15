@@ -28,7 +28,7 @@
   <test_depend>python3-pytest</test_depend>
   <test_depend>ros2run</test_depend>
   <test_depend>ros2topic</test_depend>
-  <test_depend>mcap-ros2-support</test_depend>
+  <test_depend condition="$USE_MCAP_PIP == 1">mcap-ros2-support</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
