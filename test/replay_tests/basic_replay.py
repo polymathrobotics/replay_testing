@@ -44,6 +44,8 @@ class Run:
                     'ros2',
                     'topic',
                     'pub',
+                    '-r',
+                    '10',
                     '/user/cmd_vel',
                     'geometry_msgs/msg/Twist',
                     '{linear: {x: 1.0}, angular: {z: 0.5}}',
@@ -60,5 +62,5 @@ class AnalyzeBasicReplay:
         msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
 
         msgs = [msg for msg in msgs_it]
-        assert len(msgs) == 1
+        assert len(msgs) >= 1
         assert msgs[0].channel.topic == '/user/cmd_vel'

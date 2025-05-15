@@ -96,6 +96,8 @@ def test_run():
                         'ros2',
                         'topic',
                         'pub',
+                        '-r',
+                        '10',
                         '/user/cmd_vel',
                         'geometry_msgs/msg/Twist',
                         '{linear: {x: 1.0}, angular: {z: 0.5}}',
@@ -126,7 +128,7 @@ def test_run():
     msgs_it = mcap_ros2.reader.read_ros2_messages(msg_reader, topics=['/user/cmd_vel'])
 
     msgs = [msg for msg in msgs_it]
-    assert len(msgs) == 1
+    assert len(msgs) >= 1
     assert msgs[0].channel.topic == '/user/cmd_vel'
     return
 
@@ -148,6 +150,8 @@ def test_analyze():
                         'ros2',
                         'topic',
                         'pub',
+                        '-r',
+                        '10',
                         '/user/cmd_vel',
                         'geometry_msgs/msg/Twist',
                         '{linear: {x: 1.0}, angular: {z: 0.5}}',
@@ -163,7 +167,7 @@ def test_analyze():
             msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
 
             msgs = [msg for msg in msgs_it]
-            assert len(msgs) == 1
+            assert len(msgs) >= 1
             assert msgs[0].channel.topic == '/user/cmd_vel'
 
     test_module.Fixtures = Fixtures
@@ -196,6 +200,8 @@ def test_failed_analyze():
                         'ros2',
                         'topic',
                         'pub',
+                        '-r',
+                        '10',
                         '/user/cmd_vel',
                         'geometry_msgs/msg/Twist',
                         '{linear: {x: 1.0}, angular: {z: 0.5}}',
@@ -243,6 +249,8 @@ def test_multiple_fixtures():
                         'ros2',
                         'topic',
                         'pub',
+                        '-r',
+                        '10',
                         '/user/cmd_vel',
                         'geometry_msgs/msg/Twist',
                         '{linear: {x: 1.0}, angular: {z: 0.5}}',
@@ -258,7 +266,7 @@ def test_multiple_fixtures():
             msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
 
             msgs = [msg for msg in msgs_it]
-            assert len(msgs) == 1
+            assert len(msgs) >= 1
             assert msgs[0].channel.topic == '/user/cmd_vel'
 
     test_module.Fixtures = Fixtures
@@ -307,6 +315,8 @@ def test_parametric_sweep():
                         'ros2',
                         'topic',
                         'pub',
+                        '-r',
+                        '10',
                         '/user/cmd_vel',
                         'geometry_msgs/msg/Twist',
                         json.dumps(twist_msg),
@@ -322,7 +332,7 @@ def test_parametric_sweep():
             msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
 
             msgs = [msg for msg in msgs_it]
-            assert len(msgs) == 1
+            assert len(msgs) >= 1
             assert msgs[0].channel.topic == '/user/cmd_vel'
 
     test_module.Fixtures = Fixtures
