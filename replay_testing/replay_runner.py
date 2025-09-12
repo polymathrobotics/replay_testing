@@ -82,7 +82,7 @@ class ReplayTestingRunner:
         raise ValueError(f'No class found for {stage} stage')
 
     def _create_run_launch_description(
-        self, filtered_fixture, run_fixture, test_ld: launch.LaunchDescription, run
+        self, filtered_fixture, run_fixture, test_ld: launch.LaunchDescription, run, params: dict
     ) -> launch.LaunchDescription:
         # Define the process action for playing the MCAP file
         cmd = [
@@ -90,9 +90,10 @@ class ReplayTestingRunner:
             'bag',
             'play',
             filtered_fixture.path,
-            '--clock',
-            '10000',
         ]
+
+        if params.params.use_clock:
+            cmd.extend(['--clock', '1000'])
 
         if hasattr(run, 'qos_overrides_yaml'):
             cmd.extend(['--qos-profile-overrides-path', run.qos_overrides_yaml])
@@ -209,7 +210,7 @@ class ReplayTestingRunner:
                 test_launch_description = run.generate_launch_description(param)
 
                 ld = self._create_run_launch_description(
-                    replay_fixture.filtered_fixture, run_fixture, test_launch_description, run
+                    replay_fixture.filtered_fixture, run_fixture, test_launch_description, run, param
                 )
                 launch_service = launch.LaunchService()
                 launch_service.include_launch_description(ld)

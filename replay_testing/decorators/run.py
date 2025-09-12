@@ -52,5 +52,5 @@ class run:
         return run(parameters=parameters)
 
     @staticmethod
-    def default():
-        return run(parameters=[ReplayRunParams(name='default', params={})])
+    def default(params: dict = {}):
+        return run(parameters=[ReplayRunParams(name='default', params=params)])

@@ -26,9 +26,12 @@ class ReplayTestingPhase(Enum):
     ANALYZE = 'analyze'
 
 
+class RunnerParams(BaseModel):
+    use_clock: bool = True
+
 class ReplayRunParams(BaseModel):
     name: str
-    params: dict
+    params: RunnerParams
 
 
 class McapFixture(BaseModel):

@@ -111,6 +111,26 @@ class Run:
     ...rest of def
 ```
 
+#### Clock Configuration
+
+By default, replay tests use `/clock` topic for time synchronization. You can disable this behavior using `RunnerParams`:
+
+```python
+from replay_testing import RunnerParams
+
+@run.default(params=RunnerParams(use_clock=False))
+class Run:
+    def generate_launch_description(self) -> LaunchDescription:
+        # Your launch description here
+        pass
+```
+
+When `use_clock=True` (default), the replay framework will:
+- Publish `/clock` messages from the MCAP file to synchronize time
+
+When `use_clock=False`, the replay will:
+- Skip `/clock` topic publishing
+
 ### Analyze `@analyze`
 
 The analyze step is run after the mcap from the `run` is recorded and written. It is a basic wrapper over `unittest.TestCase`, so any `unittest` assertions are built in.
