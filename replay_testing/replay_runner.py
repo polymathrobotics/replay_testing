@@ -160,9 +160,16 @@ class ReplayTestingRunner:
                     input_topics_present.append(topic_type.name)
 
             if set(input_topics_present) != set(required_input_topics):
-                diff = difflib.ndiff(input_topics_present, required_input_topics)
-                diff_str = '\n'.join(diff)
-                _logger_.error(f'Input topics do not match. Diff: {diff_str}')
+                missing_topics = set(required_input_topics) - set(input_topics_present)
+                extra_topics = set(input_topics_present) - set(required_input_topics)
+
+                error_msg = 'Input topics do not match:'
+                if missing_topics:
+                    error_msg += f'\n  Missing topics: {sorted(missing_topics)}'
+                if extra_topics:
+                    error_msg += f'\n  Extra topics: {sorted(extra_topics)}'
+
+                _logger_.error(error_msg)
                 raise AssertionError('Input topics do not match. Check logs for more information')
 
             current_fixture_results_dir = self._replay_results_directory + f'/{Path(fixture_item.path).stem}'
