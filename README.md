@@ -57,7 +57,7 @@ Replay testing has three distinct phases, **all of which are required to run a r
 ### Filter Fixtures `@fixtures`
 
 For collecting and preparing your fixtures to be run against your launch specification. Duties include:
-- Provides a mechanism for specifying your input fixtures (e.g. `lidar_data.mcap`)
+- Provides a mechanism for specifying your input fixtures (e.g. `lidar_data.mcap`). If you want to store your MCAPs outside of source control, see [Storing MCAP](#storing-mcap) below.
 - Filtering out any expected output topics that will be produced from the `run` step.
 - Produces a `filtered_fixture.mcap` asset that is used against the `run` step
 - Asserts that specified input topics are present
@@ -219,6 +219,29 @@ If you'd like to directly view the resulting replay results in tools like Foxglo
 ```
 
 The guide here is dynamically generated, and within that directory you can find all of your run results under the `runs` subdirectory.
+
+## Storing MCAP
+
+Most of your bags are going to be well past what's reasonable to track in source control. `replay_testing` is compatible with S3 storage compatiable sources (AWS, Backblaze B2, Wasabi etc), you just have to use the `S3Fixture` helper class in your `@fixtures` step:
+
+```python
+@fixtures.parameterize([S3Fixture(key='generic/cmd_vel_only.mcap')])
+class Fixtures:
+    required_input_topics = ['/vehicle/cmd_vel']
+    expected_output_topics = ['/user/cmd_vel']
+```
+
+When developing locally, you can use the `--env` argument to point to a local env file with your credentials, or source them in your environment some other way.
+
+The variables you'll need are:
+
+```bash
+AWS_ACCESS_KEY_ID=[YOUR_KEY]
+AWS_SECRET_ACCESS_KEY=[YOUR_SECRET]
+AWS_DEFAULT_REGION=[REGION e.g. us-west-2]
+AWS_S3_ENDPOINT_URL=[YOUR_URL]
+AWS_BUCKET=[YOUR_BUCKET_NAME]
+```
 
 ## Developing
 

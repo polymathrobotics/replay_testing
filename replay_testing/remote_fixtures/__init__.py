@@ -15,5 +15,6 @@
 
 from .base_fixture import BaseFixture
 from .nexus import NexusFixture
+from .s3 import S3Fixture
 
-__all__ = ['BaseFixture', 'NexusFixture']
+__all__ = ['BaseFixture', 'NexusFixture', 'S3Fixture']

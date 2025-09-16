@@ -62,6 +62,7 @@ if(BUILD_TESTING)
     ament_add_pytest_test(pytest ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
     add_replay_test(test/replay_tests/basic_replay.py)
+    add_replay_test(test/replay_tests/s3_replay.py)
 
     if($ENV{USE_NEXUS})
       add_replay_test(test/replay_tests/nexus_replay.py)

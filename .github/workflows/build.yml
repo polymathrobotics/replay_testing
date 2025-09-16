@@ -29,6 +29,12 @@ jobs:
       ROS_DISTRO: ${{ matrix.ros }}
       PIP_BREAK_SYSTEM_PACKAGES: 1
       USE_MCAP_PIP: 1
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-west-2
+      AWS_S3_ENDPOINT_URL: ${{ secrets.AWS_S3_ENDPOINT_URL }}
+      AWS_BUCKET: replay-testing-bags
+
     steps:
       - uses: actions/checkout@v4
       - uses: ros-tooling/action-ros-ci@v0.4
