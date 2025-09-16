@@ -13,7 +13,6 @@
 # limitations under the License.
 #
 
-import difflib
 import inspect
 import os
 import unittest
@@ -33,7 +32,7 @@ from termcolor import colored
 from .filter import filter_mcap
 from .junit_to_xml import pretty_log_junit_xml, unittest_results_to_xml, write_xml_to_file
 from .logging_config import get_logger
-from .models import McapFixture, ReplayTestingPhase
+from .models import McapFixture, ReplayRunParams, ReplayTestingPhase
 from .reader import get_message_mcap_reader, get_sequential_mcap_reader
 from .remote_fixtures import BaseFixture
 from .replay_fixture import ReplayFixture
@@ -82,7 +81,7 @@ class ReplayTestingRunner:
         raise ValueError(f'No class found for {stage} stage')
 
     def _create_run_launch_description(
-        self, filtered_fixture, run_fixture, test_ld: launch.LaunchDescription, run, params: dict
+        self, filtered_fixture, run_fixture, test_ld: launch.LaunchDescription, run, params: ReplayRunParams
     ) -> launch.LaunchDescription:
         # Define the process action for playing the MCAP file
         cmd = [
@@ -92,7 +91,7 @@ class ReplayTestingRunner:
             filtered_fixture.path,
         ]
 
-        if params.params.use_clock:
+        if params.runner_args is not None and params.runner_args.use_clock:
             cmd.extend(['--clock', '1000'])
 
         if hasattr(run, 'qos_overrides_yaml'):
