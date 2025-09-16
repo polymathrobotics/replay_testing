@@ -243,7 +243,6 @@ AWS_S3_ENDPOINT_URL=[YOUR_URL]
 AWS_BUCKET=[YOUR_BUCKET_NAME]
 ```
 
-
 ## Developing
 
 ### Activating Code Standard Hooks

@@ -41,7 +41,7 @@ def _load_env_file(env_file_path):
     if not os.path.isfile(env_file_path):
         raise FileNotFoundError(f"Environment file '{env_file_path}' does not exist")
 
-    _logger_.info(f"Loading environment variables from {env_file_path}")
+    _logger_.info(f'Loading environment variables from {env_file_path}')
 
     with open(env_file_path, 'r') as f:
         for line_num, line in enumerate(f, 1):
@@ -53,7 +53,7 @@ def _load_env_file(env_file_path):
 
             # Parse KEY=VALUE format
             if '=' not in line:
-                _logger_.warning(f"Skipping invalid line {line_num} in {env_file_path}: {line}")
+                _logger_.warning(f'Skipping invalid line {line_num} in {env_file_path}: {line}')
                 continue
 
             key, value = line.split('=', 1)
@@ -66,9 +66,9 @@ def _load_env_file(env_file_path):
 
             # Set environment variable
             os.environ[key] = value
-            _logger_.debug(f"Set {key}={value}")
+            _logger_.debug(f'Set {key}={value}')
 
-    _logger_.info(f"Loaded environment variables from {env_file_path}")
+    _logger_.info(f'Loaded environment variables from {env_file_path}')
 
 
 def add_arguments(parser):
@@ -128,7 +128,7 @@ def run(parser, args):
             # TODO(troy): Replace with dotenv package
             _load_env_file(args.env_file)
         except Exception as e:
-            parser.error(f"Failed to load environment file: {e}")
+            parser.error(f'Failed to load environment file: {e}')
 
     # Load the test file as a module and make sure it has the required
     # components to run it as a replay test

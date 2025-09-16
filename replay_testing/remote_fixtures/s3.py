@@ -33,7 +33,7 @@ class S3Fixture(BaseFixture):
     def __init__(
         self,
         key: str,
-        bucket:  Optional[str] = None,
+        bucket: Optional[str] = None,
         region_name: Optional[str] = None,
         aws_access_key_id: Optional[str] = None,
         aws_secret_access_key: Optional[str] = None,
@@ -95,7 +95,7 @@ class S3Fixture(BaseFixture):
         # Extract filename from S3 key
         filename = os.path.basename(self.key)
         if not filename:
-            raise TypeError(f"No valid path provided: {filename}")
+            raise TypeError(f'No valid path provided: {filename}')
 
         # Ensure destination folder exists
         Path(destination_folder).mkdir(parents=True, exist_ok=True)
@@ -142,7 +142,9 @@ class S3Fixture(BaseFixture):
 
         except NoCredentialsError:
             _logger_.error('AWS credentials not found. Please configure AWS credentials.')
-            raise RuntimeError('AWS credentials not configured. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or configure AWS CLI.')
+            raise RuntimeError(
+                'AWS credentials not configured. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or configure AWS CLI.'
+            )
         except ClientError as e:
             error_code = e.response.get('Error', {}).get('Code', 'Unknown')
             error_message = e.response.get('Error', {}).get('Message', str(e))
