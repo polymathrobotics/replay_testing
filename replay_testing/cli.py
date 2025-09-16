@@ -36,6 +36,41 @@ def _load_python_file_as_module(test_module_name, python_file_path):
     return module
 
 
+def _load_env_file(env_file_path):
+    """Load environment variables from a file."""
+    if not os.path.isfile(env_file_path):
+        raise FileNotFoundError(f"Environment file '{env_file_path}' does not exist")
+
+    _logger_.info(f"Loading environment variables from {env_file_path}")
+
+    with open(env_file_path, 'r') as f:
+        for line_num, line in enumerate(f, 1):
+            line = line.strip()
+
+            # Skip empty lines and comments
+            if not line or line.startswith('#'):
+                continue
+
+            # Parse KEY=VALUE format
+            if '=' not in line:
+                _logger_.warning(f"Skipping invalid line {line_num} in {env_file_path}: {line}")
+                continue
+
+            key, value = line.split('=', 1)
+            key = key.strip()
+            value = value.strip()
+
+            # Remove quotes if present
+            if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+                value = value[1:-1]
+
+            # Set environment variable
+            os.environ[key] = value
+            _logger_.debug(f"Set {key}={value}")
+
+    _logger_.info(f"Loaded environment variables from {env_file_path}")
+
+
 def add_arguments(parser):
     """Add arguments to the CLI parser."""
     parser.add_argument('replay_test_file', help='Path to the replay test.')
@@ -71,6 +106,14 @@ def add_arguments(parser):
         help='Do write xUnit reports to specified path.',
     )
 
+    parser.add_argument(
+        '--env',
+        action='store',
+        dest='env_file',
+        default=None,
+        help='Path to environment file to load variables from.',
+    )
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='replay integration testing tool.')
@@ -79,6 +122,14 @@ def parse_arguments():
 
 
 def run(parser, args):
+    # Load environment file if specified
+    if args.env_file:
+        try:
+            # TODO(troy): Replace with dotenv package
+            _load_env_file(args.env_file)
+        except Exception as e:
+            parser.error(f"Failed to load environment file: {e}")
+
     # Load the test file as a module and make sure it has the required
     # components to run it as a replay test
     if not os.path.isfile(args.replay_test_file):
