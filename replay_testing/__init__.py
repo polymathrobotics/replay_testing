@@ -18,7 +18,7 @@ from .decorators.fixtures import fixtures
 from .decorators.run import run
 from .junit_to_xml import unittest_results_to_xml
 from .logging_config import get_logger
-from .models import McapFixture, ReplayRunParams, RunnerParams
+from .models import McapFixture, ReplayRunParams, RunnerArgs
 from .reader import get_message_mcap_reader, get_sequential_mcap_reader
 from .remote_fixtures import BaseFixture, NexusFixture
 from .replay_runner import ReplayTestingRunner
@@ -32,7 +32,7 @@ __all__ = [
     'get_message_mcap_reader',
     'McapFixture',
     'ReplayRunParams',
-    'RunnerParams',
+    'RunnerArgs',
     'unittest_results_to_xml',
     'get_logger',
     'BaseFixture',
