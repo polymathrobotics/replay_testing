@@ -13,7 +13,6 @@
 # limitations under the License.
 #
 
-import difflib
 import inspect
 import os
 import unittest

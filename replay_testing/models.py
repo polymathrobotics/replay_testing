@@ -29,6 +29,7 @@ class ReplayTestingPhase(Enum):
 class RunnerParams(BaseModel):
     use_clock: bool = True
 
+
 class ReplayRunParams(BaseModel):
     name: str
     params: RunnerParams
