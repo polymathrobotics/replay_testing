@@ -118,7 +118,7 @@ By default, replay tests use `/clock` topic for time synchronization. You can di
 ```python
 from replay_testing import RunnerParams
 
-@run.default(params=RunnerParams(use_clock=False))
+@run.default(params=RunnerParams(runner_args=RunnerArgs(use_clock=False)))
 class Run:
     def generate_launch_description(self) -> LaunchDescription:
         # Your launch description here
