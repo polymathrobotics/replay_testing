@@ -113,12 +113,12 @@ class Run:
 
 #### Clock Configuration
 
-By default, replay tests use `/clock` topic for time synchronization. You can disable this behavior using `RunnerParams`:
+By default, replay tests use `/clock` topic for time synchronization. You can disable this behavior using `ReplayRunParams`:
 
 ```python
-from replay_testing import RunnerParams
+from replay_testing import ReplayRunParams, RunnerArgs
 
-@run.default(params=RunnerParams(runner_args=RunnerArgs(use_clock=False)))
+@run.default(params=ReplayRunParams(name='default', params={}, runner_args=RunnerArgs(use_clock=False)))
 class Run:
     def generate_launch_description(self) -> LaunchDescription:
         # Your launch description here
