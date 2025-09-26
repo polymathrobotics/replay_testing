@@ -89,6 +89,8 @@ class ReplayTestingRunner:
             'bag',
             'play',
             filtered_fixture.path,
+            '-r',
+            str(params.runner_args.playback_rate),
         ]
 
         if params.runner_args is not None and params.runner_args.use_clock:
@@ -202,6 +204,7 @@ class ReplayTestingRunner:
             if len(replay_fixture.run_fixtures) > 0:
                 raise ValueError('Run fixtures already exist')
 
+            _logger_.info(f'Running tests for fixture: {replay_fixture.input_fixture.path}')
             for param in run.parameters:
                 run_fixture = McapFixture(path=replay_fixture.base_path + f'/runs/{param.name}')
                 replay_fixture.run_fixtures.append(run_fixture)
@@ -214,6 +217,7 @@ class ReplayTestingRunner:
                 launch_service = launch.LaunchService()
                 launch_service.include_launch_description(ld)
                 launch_service.run()
+                _logger_.info('Launch service complete')
 
             # TODO(troy): Pretty please emove this hack please
 
