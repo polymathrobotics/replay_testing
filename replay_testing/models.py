@@ -28,12 +28,13 @@ class ReplayTestingPhase(Enum):
 
 class RunnerArgs(BaseModel):
     use_clock: bool = True
+    playback_rate: float = 5.0
 
 
 class ReplayRunParams(BaseModel):
     name: str
     params: dict
-    runner_args: Optional[RunnerArgs] = None
+    runner_args: RunnerArgs = RunnerArgs()
 
 
 class McapFixture(BaseModel):
