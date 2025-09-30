@@ -151,6 +151,7 @@ def test_analyze():
                         'ros2',
                         'topic',
                         'pub',
+                        '--use-sim-time',
                         '-r',
                         '10',
                         '/user/cmd_vel',
