@@ -37,7 +37,7 @@ class ReplayRunParams(BaseModel):
     runner_args: RunnerArgs = RunnerArgs()
 
 
-class McapFixture(BaseModel):
+class Mcap(BaseModel):
     path: str
     reader: Optional[McapReader] = None
 

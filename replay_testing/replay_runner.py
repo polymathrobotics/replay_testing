@@ -15,9 +15,9 @@
 
 import inspect
 import os
+import shutil
 import unittest
 import uuid
-from pathlib import Path
 
 import launch
 from launch import LaunchDescription
@@ -29,12 +29,13 @@ from launch.event_handlers import OnProcessExit
 from launch.events import Shutdown
 from termcolor import colored
 
+from .constants import ORIGINAL_FIXTURE
 from .filter import filter_mcap
+from .fixture_wrappers import BaseFixture
 from .junit_to_xml import pretty_log_junit_xml, unittest_results_to_xml, write_xml_to_file
 from .logging_config import get_logger
-from .models import McapFixture, ReplayRunParams, ReplayTestingPhase
+from .models import Mcap, ReplayRunParams, ReplayTestingPhase
 from .reader import get_message_mcap_reader, get_sequential_mcap_reader
-from .remote_fixtures import BaseFixture
 from .replay_fixture import ReplayFixture
 from .replay_test_result import ReplayTestResult
 
@@ -46,17 +47,27 @@ class ReplayTestingRunner:
     _replay_fixtures: list[ReplayFixture] = None
     # todo: Validate input in test_module
 
-    def __init__(self, test_module):
+    def __init__(self, test_module, *, run_id: str = None):
         self._replay_fixtures = []
         self._test_module = test_module
         # TODO: Change to /tmp/replay_testing/{test_run_uuid}
         self._test_run_uuid = uuid.uuid4()
-
+        if run_id:
+            self._test_run_uuid = uuid.UUID(run_id)
         # For Gitlab CI. TODO(troy): This should just be an env variable set by .gitlab-ci.yml
         if os.environ.get('CI'):
             self._replay_results_directory = f'test_results/replay_testing/{self._test_run_uuid}'
         else:
             self._replay_results_directory = f'/tmp/replay_testing/{self._test_run_uuid}'
+
+        if run_id:
+            self._replay_fixtures = self._get_prev_run_fixtures()
+            print('*** Starting analysis ***')
+            print(f'Number of replay fixtures: {len(self._replay_fixtures)}')
+
+    @property
+    def run_id(self) -> str:
+        return str(self._test_run_uuid)
 
     def _log_stage(self, stage: ReplayTestingPhase, is_start: bool = True):
         stage_name = stage.name
@@ -126,6 +137,27 @@ class ReplayTestingRunner:
             on_exit_handler,  # Add the event handler to shutdown after playback finishes
         ])
 
+    def _get_prev_run_fixtures(self) -> list[ReplayFixture]:
+        # List _replay_results_directory for directories (ignore files)
+        dirs = os.listdir(self._replay_results_directory)
+
+        replay_fixture_list = []
+
+        # Find input fixture, and produce Mcap
+        for dir in dirs:
+            dir_path = os.path.join(self._replay_results_directory, dir)
+            if os.path.isdir(dir_path):
+                path = os.path.join(dir_path, ORIGINAL_FIXTURE)
+                input_fixture = Mcap(path=path)
+                replay_fixture = ReplayFixture(dir_path, input_fixture)
+                for run_dir in os.listdir(os.path.join(dir_path, 'runs')):
+                    run_fixture = Mcap(path=os.path.join(dir_path, 'runs', run_dir))
+                    replay_fixture.run_fixtures.append(run_fixture)
+
+                replay_fixture_list.append(replay_fixture)
+
+        return replay_fixture_list
+
     def filter_fixtures(self) -> str:
         self._log_stage_start(ReplayTestingPhase.FIXTURES)
 
@@ -138,11 +170,20 @@ class ReplayTestingRunner:
 
         # MCAP Assertions
         for fixture_item in fixture_cls.fixture_list:
-            if isinstance(fixture_item, BaseFixture):
-                fixture_item = fixture_item.download(self._replay_results_directory)
+            if not isinstance(fixture_item, BaseFixture):
+                raise TypeError(f'Fixture item {fixture_item} is not a subclass of BaseFixture')
 
-            assert os.path.exists(fixture_item.path), 'Fixture path does not exist'
-            assert os.path.splitext(fixture_item.path)[1] == '.mcap', 'Fixture path is not an .mcap file'
+            dest = f'{self._replay_results_directory}/{fixture_item.object_key}'
+            os.makedirs(dest)
+            tmp_fixture = fixture_item.download(dest)
+            og_fixture_path = os.path.join(dest, ORIGINAL_FIXTURE)
+            shutil.move(tmp_fixture.path, og_fixture_path)
+            fixture_item = Mcap(path=og_fixture_path)
+
+            assert os.path.exists(fixture_item.path), f'Fixture path ({fixture_item.path}) does not exist'
+            assert os.path.splitext(fixture_item.path)[1] == '.mcap', (
+                f'Fixture path ({fixture_item.path}) is not an .mcap file'
+            )
 
             # Input Topics Validation
             reader = get_sequential_mcap_reader(fixture_item.path)
@@ -174,9 +215,7 @@ class ReplayTestingRunner:
                 _logger_.error(error_msg)
                 raise AssertionError('Input topics do not match. Check logs for more information')
 
-            current_fixture_results_dir = self._replay_results_directory + f'/{Path(fixture_item.path).stem}'
-            os.makedirs(current_fixture_results_dir)
-            replay_fixture = ReplayFixture(current_fixture_results_dir, fixture_item)
+            replay_fixture = ReplayFixture(dest, fixture_item)
             # Run Filter
             # todo: add error handling
             filter_mcap(
@@ -206,7 +245,7 @@ class ReplayTestingRunner:
 
             _logger_.info(f'Running tests for fixture: {replay_fixture.input_fixture.path}')
             for param in run.parameters:
-                run_fixture = McapFixture(path=replay_fixture.base_path + f'/runs/{param.name}')
+                run_fixture = Mcap(path=replay_fixture.base_path + f'/runs/{param.name}')
                 replay_fixture.run_fixtures.append(run_fixture)
 
                 test_launch_description = run.generate_launch_description(param)
@@ -219,8 +258,7 @@ class ReplayTestingRunner:
                 launch_service.run()
                 _logger_.info('Launch service complete')
 
-            # TODO(troy): Pretty please emove this hack please
-
+            # TODO(troy): Pretty please remove this hack please
             replay_fixture.cleanup_run_fixtures()
             self._log_stage_end(ReplayTestingPhase.RUN)
         return self._replay_fixtures
@@ -267,7 +305,7 @@ class ReplayTestingRunner:
         self._log_stage_end(ReplayTestingPhase.ANALYZE)
         return (exit_code, junit_xml_path)
 
-    def _was_successful(self, results: dict[str, list[tuple[ReplayTestResult, McapFixture]]]) -> bool:
+    def _was_successful(self, results: dict[str, list[tuple[ReplayTestResult, Mcap]]]) -> bool:
         for _, fixture_results in results.items():
             for fixture_result in fixture_results:
                 if not fixture_result['result'].wasSuccessful():

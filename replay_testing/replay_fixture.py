@@ -16,25 +16,23 @@
 import shutil
 from pathlib import Path
 
-from .models import McapFixture
+from .models import Mcap
 from .reader import get_message_mcap_reader
 from .utils import find_mcap_files
 
-# Class responsible for managing all replay fixtures
-
 
 class ReplayFixture:
-    input_fixture: McapFixture = None
-    filtered_fixture: McapFixture = None
-    run_fixtures: list[McapFixture] = None
+    input_fixture: Mcap = None
+    filtered_fixture: Mcap = None
+    run_fixtures: list[Mcap] = None
 
     base_path: str
 
-    def __init__(self, base_folder: str, fixture: McapFixture):
+    def __init__(self, base_folder: str, input_fixture: Mcap):
         self.run_fixtures = []
         self.base_path = base_folder
-        self.input_fixture = fixture
-        self.filtered_fixture = McapFixture(path=self.base_path + '/filtered_fixture.mcap')
+        self.input_fixture = input_fixture
+        self.filtered_fixture = Mcap(path=self.base_path + '/filtered_fixture.mcap')
 
     def cleanup_run_fixtures(self):
         for run_fixture in self.run_fixtures:
