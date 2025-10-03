@@ -103,6 +103,10 @@ class S3Fixture(BaseFixture):
             self.client_kwargs['region_name'] = region_name or os.getenv('AWS_DEFAULT_REGION')
             self.client_kwargs['endpoint_url'] = endpoint_url or os.getenv('AWS_S3_ENDPOINT_URL')
 
+    @property
+    def object_key(self) -> str:
+        return Path(self.key).stem
+
     def _get_s3_client(self):
         """Get the S3 client, either the provided one or create a new one.
 

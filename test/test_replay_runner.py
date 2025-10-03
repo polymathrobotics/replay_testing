@@ -187,7 +187,6 @@ def test_analyze():
     return
 
 
-"""
 def test_only_analyze():
     test_module = types.ModuleType('test_module')
 
@@ -240,7 +239,6 @@ def test_only_analyze():
     assert exit_code == 1
 
     return
-"""
 
 
 def test_failed_analyze():

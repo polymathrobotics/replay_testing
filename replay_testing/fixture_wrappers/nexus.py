@@ -16,6 +16,7 @@
 import base64
 import os
 import subprocess
+from pathlib import Path
 
 from ..logging_config import get_logger
 from ..models import Mcap
@@ -34,6 +35,10 @@ class NexusFixture(BaseFixture):
 
     def __init__(self, path: str):
         self.nexus_path = path
+
+    @property
+    def object_key(self) -> str:
+        return Path(self.nexus_path).stem
 
     def download(self, destination_folder: str) -> Mcap:
         """Download fixtures from Nexus repository.

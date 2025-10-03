@@ -15,9 +15,9 @@
 
 import inspect
 import os
+import shutil
 import unittest
 import uuid
-from pathlib import Path
 
 import launch
 from launch import LaunchDescription
@@ -29,6 +29,7 @@ from launch.event_handlers import OnProcessExit
 from launch.events import Shutdown
 from termcolor import colored
 
+from .constants import ORIGINAL_FIXTURE
 from .filter import filter_mcap
 from .fixture_wrappers import BaseFixture
 from .junit_to_xml import pretty_log_junit_xml, unittest_results_to_xml, write_xml_to_file
@@ -53,12 +54,16 @@ class ReplayTestingRunner:
         self._test_run_uuid = uuid.uuid4()
         if run_id:
             self._test_run_uuid = uuid.UUID(run_id)
-
         # For Gitlab CI. TODO(troy): This should just be an env variable set by .gitlab-ci.yml
         if os.environ.get('CI'):
             self._replay_results_directory = f'test_results/replay_testing/{self._test_run_uuid}'
         else:
             self._replay_results_directory = f'/tmp/replay_testing/{self._test_run_uuid}'
+
+        if run_id:
+            self._replay_fixtures = self._get_prev_run_fixtures()
+            print('*** Starting analysis ***')
+            print(f'Number of replay fixtures: {len(self._replay_fixtures)}')
 
     @property
     def run_id(self) -> str:
@@ -132,7 +137,7 @@ class ReplayTestingRunner:
             on_exit_handler,  # Add the event handler to shutdown after playback finishes
         ])
 
-    def _get_prev_run_fixtures(self, run_id: str) -> list[ReplayFixture]:
+    def _get_prev_run_fixtures(self) -> list[ReplayFixture]:
         # List _replay_results_directory for directories (ignore files)
         dirs = os.listdir(self._replay_results_directory)
 
@@ -142,8 +147,14 @@ class ReplayTestingRunner:
         for dir in dirs:
             dir_path = os.path.join(self._replay_results_directory, dir)
             if os.path.isdir(dir_path):
-                input_fixture = Mcap(path=dir_path)
-                replay_fixture_list.append(ReplayFixture(input_fixture))
+                path = os.path.join(dir_path, ORIGINAL_FIXTURE)
+                input_fixture = Mcap(path=path)
+                replay_fixture = ReplayFixture(dir_path, input_fixture)
+                for run_dir in os.listdir(os.path.join(dir_path, 'runs')):
+                    run_fixture = Mcap(path=os.path.join(dir_path, 'runs', run_dir))
+                    replay_fixture.run_fixtures.append(run_fixture)
+
+                replay_fixture_list.append(replay_fixture)
 
         return replay_fixture_list
 
@@ -162,7 +173,12 @@ class ReplayTestingRunner:
             if not isinstance(fixture_item, BaseFixture):
                 raise TypeError(f'Fixture item {fixture_item} is not a subclass of BaseFixture')
 
-            fixture_item = fixture_item.download(self._replay_results_directory)
+            dest = f'{self._replay_results_directory}/{fixture_item.object_key}'
+            os.makedirs(dest)
+            tmp_fixture = fixture_item.download(dest)
+            og_fixture_path = os.path.join(dest, ORIGINAL_FIXTURE)
+            shutil.move(tmp_fixture.path, og_fixture_path)
+            fixture_item = Mcap(path=og_fixture_path)
 
             assert os.path.exists(fixture_item.path), f'Fixture path ({fixture_item.path}) does not exist'
             assert os.path.splitext(fixture_item.path)[1] == '.mcap', (
@@ -199,9 +215,7 @@ class ReplayTestingRunner:
                 _logger_.error(error_msg)
                 raise AssertionError('Input topics do not match. Check logs for more information')
 
-            current_fixture_results_dir = self._replay_results_directory + f'/{Path(fixture_item.path).stem}'
-            os.makedirs(current_fixture_results_dir)
-            replay_fixture = ReplayFixture(current_fixture_results_dir, fixture_item)
+            replay_fixture = ReplayFixture(dest, fixture_item)
             # Run Filter
             # todo: add error handling
             filter_mcap(

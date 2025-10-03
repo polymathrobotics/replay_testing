@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import shutil
+from pathlib import Path
 
 from ..models import Mcap
 from .base_fixture import BaseFixture
@@ -20,6 +21,10 @@ from .base_fixture import BaseFixture
 class McapFixture(BaseFixture):
     def __init__(self, path: str):
         self.path = path
+
+    @property
+    def object_key(self) -> str:
+        return Path(self.path).stem
 
     def download(self, destination: str) -> Mcap:
         """Download the fixture files and return a Mcap object.
