@@ -21,7 +21,7 @@ from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
 from replay_testing import analyze, fixtures, run
-from replay_testing.remote_fixtures import S3Fixture
+from replay_testing.fixture_wrappers import S3Fixture
 
 # This example uses the default credential chain (env vars, ~/.aws/credentials, IAM roles, etc.)
 # s3_client = boto3.client('s3')

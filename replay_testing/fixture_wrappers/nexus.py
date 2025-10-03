@@ -18,7 +18,7 @@ import os
 import subprocess
 
 from ..logging_config import get_logger
-from ..models import McapFixture
+from ..models import Mcap
 from .base_fixture import BaseFixture
 
 _logger_ = get_logger()
@@ -35,11 +35,11 @@ class NexusFixture(BaseFixture):
     def __init__(self, path: str):
         self.nexus_path = path
 
-    def download(self, destination_folder: str) -> McapFixture:
+    def download(self, destination_folder: str) -> Mcap:
         """Download fixtures from Nexus repository.
 
         Returns:
-            McapFixture: A McapFixture object with paths
+            Mcap: A Mcap object with paths
             to downloaded files
         """
 
@@ -72,7 +72,7 @@ class NexusFixture(BaseFixture):
 
         if result.returncode == 0:
             _logger_.info(f'Download successful: {destination_folder}/{nexus_filename}')
-            return McapFixture(path=f'{destination_folder}/{nexus_filename}')
+            return Mcap(path=f'{destination_folder}/{nexus_filename}')
         else:
             _logger_.error(f'Download failed for {self.nexus_path}')
             _logger_.error(f'STDOUT: {result.stdout}')

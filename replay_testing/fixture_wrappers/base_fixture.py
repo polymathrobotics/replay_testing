@@ -13,8 +13,21 @@
 # limitations under the License.
 #
 
-from .base_fixture import BaseFixture
-from .nexus import NexusFixture
-from .s3 import S3Fixture
+import abc
 
-__all__ = ['BaseFixture', 'NexusFixture', 'S3Fixture']
+from ..models import Mcap
+
+
+class BaseFixture(abc.ABC):
+    @abc.abstractmethod
+    def download(self, destination: str) -> Mcap:
+        """Download the fixture files and return a McapFixture object.
+
+        This method must be implemented by child classes to retrieve
+        fixture files from the appropriate source.
+
+        Returns:
+            McapFixture: A McapFixture object with paths
+            to the downloaded files
+        """
+        return Mcap(path=destination)
