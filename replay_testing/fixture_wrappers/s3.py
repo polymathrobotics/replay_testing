@@ -13,7 +13,9 @@
 # limitations under the License.
 #
 
+import json
 import os
+import shutil
 from pathlib import Path
 from typing import Optional
 
@@ -21,10 +23,12 @@ import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 
 from ..logging_config import get_logger
-from ..models import McapFixture
+from ..models import Mcap
 from .base_fixture import BaseFixture
 
 _logger_ = get_logger()
+
+CACHE_DIR = Path('/tmp/replay_testing/.cache')
 
 
 class S3Fixture(BaseFixture):
@@ -99,6 +103,10 @@ class S3Fixture(BaseFixture):
             self.client_kwargs['region_name'] = region_name or os.getenv('AWS_DEFAULT_REGION')
             self.client_kwargs['endpoint_url'] = endpoint_url or os.getenv('AWS_S3_ENDPOINT_URL')
 
+    @property
+    def object_key(self) -> str:
+        return Path(self.key).stem
+
     def _get_s3_client(self):
         """Get the S3 client, either the provided one or create a new one.
 
@@ -113,14 +121,138 @@ class S3Fixture(BaseFixture):
         session = boto3.Session(**self.session_kwargs) if self.session_kwargs else boto3.Session()
         return session.client(**self.client_kwargs)
 
-    def download(self, destination_folder: str) -> McapFixture:
-        """Download fixture from S3.
+    def _get_object_checksum(self, s3_client) -> Optional[str]:
+        """Get the checksum of the S3 object using GetObjectAttributes.
+
+        Args:
+            s3_client: boto3 S3 client
+
+        Returns:
+            str: Checksum string if available, None otherwise
+        """
+        # Check if the method exists (might not be available in older boto3 or mocks)
+        if not hasattr(s3_client, 'get_object_attributes'):
+            _logger_.debug('get_object_attributes not available, using ETag fallback')
+            return self._get_etag_fallback(s3_client)
+
+        try:
+            response = s3_client.get_object_attributes(
+                Bucket=self.bucket, Key=self.key, ObjectAttributes=['Checksum', 'ETag']
+            )
+            # S3 can return various checksum types (SHA256, SHA1, CRC32, CRC32C)
+            checksum = response.get('Checksum', {})
+            # Return the first available checksum
+            for checksum_type in ['ChecksumSHA256', 'ChecksumSHA1', 'ChecksumCRC32', 'ChecksumCRC32C']:
+                if checksum_type in checksum:
+                    return f'{checksum_type}:{checksum[checksum_type]}'
+
+            # Fall back to ETag if no checksum available
+            etag = response.get('ETag')
+            if etag:
+                return f'ETag:{etag}'
+            return None
+        except (ClientError, AttributeError) as e:
+            _logger_.warning(f'Could not get object checksum via get_object_attributes: {e}')
+            return self._get_etag_fallback(s3_client)
+
+    def _get_etag_fallback(self, s3_client) -> Optional[str]:
+        """Fallback method to get ETag from head_object.
+
+        Args:
+            s3_client: boto3 S3 client
+
+        Returns:
+            str: ETag string if available, None otherwise
+        """
+        try:
+            response = s3_client.head_object(Bucket=self.bucket, Key=self.key)
+            etag = response.get('ETag')
+            if etag:
+                return f'ETag:{etag}'
+            return None
+        except ClientError as e:
+            _logger_.warning(f'Could not get ETag: {e}')
+            return None
+
+    def _get_cache_paths(self, filename: str) -> tuple[Path, Path]:
+        """Get cache file and metadata paths for a given filename.
+
+        Args:
+            filename: Name of the file
+
+        Returns:
+            tuple: (cache_file_path, metadata_file_path)
+        """
+        # Use bucket and key to create a unique cache path
+        cache_key = f'{self.bucket}/{self.key}'
+        cache_path = CACHE_DIR / cache_key
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        metadata_path = cache_path.parent / f'{cache_path.name}.meta'
+        return cache_path, metadata_path
+
+    def _is_cache_valid(self, cache_path: Path, metadata_path: Path, expected_checksum: Optional[str]) -> bool:
+        """Check if cached file is valid by comparing checksums.
+
+        Args:
+            cache_path: Path to cached file
+            metadata_path: Path to metadata file
+            expected_checksum: Expected checksum from S3
+
+        Returns:
+            bool: True if cache is valid, False otherwise
+        """
+        if not cache_path.exists():
+            return False
+
+        if not expected_checksum:
+            # If we can't verify checksum, consider cache invalid for safety
+            _logger_.warning('No checksum available, invalidating cache')
+            return False
+
+        if not metadata_path.exists():
+            _logger_.info('Metadata file missing, cache invalid')
+            return False
+
+        try:
+            with open(metadata_path, 'r') as f:
+                metadata = json.load(f)
+                cached_checksum = metadata.get('checksum')
+                if cached_checksum == expected_checksum:
+                    _logger_.info(f'Cache hit: {cache_path}')
+                    return True
+                else:
+                    _logger_.info('Checksum mismatch, cache invalid')
+                    return False
+        except (json.JSONDecodeError, IOError) as e:
+            _logger_.warning(f'Failed to read metadata: {e}')
+            return False
+
+    def _write_metadata(self, metadata_path: Path, checksum: Optional[str]):
+        """Write metadata file with checksum information.
+
+        Args:
+            metadata_path: Path to metadata file
+            checksum: Checksum to store
+        """
+        metadata = {
+            'bucket': self.bucket,
+            'key': self.key,
+            'checksum': checksum,
+        }
+        try:
+            with open(metadata_path, 'w') as f:
+                json.dump(metadata, f, indent=2)
+        except IOError as e:
+            _logger_.warning(f'Failed to write metadata: {e}')
+
+    def download(self, destination_folder: str) -> Mcap:
+        """Download fixture from S3 with caching support.
 
         Args:
             destination_folder: Local folder to download the file to
 
         Returns:
-            McapFixture: A McapFixture object with path to the downloaded file
+            Mcap: A Mcap object with path to the downloaded file
 
         Raises:
             RuntimeError: If download fails
@@ -136,10 +268,25 @@ class S3Fixture(BaseFixture):
         # Full path for downloaded file
         local_path = os.path.join(destination_folder, filename)
 
-        _logger_.info(f'Downloading s3://{self.bucket}/{self.key} to {local_path}')
-
         try:
             s3_client = self._get_s3_client()
+
+            # Get object checksum for cache validation
+            checksum = self._get_object_checksum(s3_client)
+
+            # Get cache paths
+            cache_path, metadata_path = self._get_cache_paths(filename)
+
+            # Check if we have a valid cached version
+            if self._is_cache_valid(cache_path, metadata_path, checksum):
+                _logger_.info(f'Using cached file from {cache_path}')
+                # Copy from cache to destination
+                shutil.copy2(cache_path, local_path)
+                _logger_.info(f'Copied from cache to {local_path}')
+                return Mcap(path=local_path)
+
+            # Cache miss - need to download
+            _logger_.info(f'Cache miss, downloading s3://{self.bucket}/{self.key}')
 
             # Check if object exists and get metadata
             try:
@@ -152,12 +299,19 @@ class S3Fixture(BaseFixture):
                 else:
                     raise RuntimeError(f'Failed to get object metadata: {str(e)}')
 
-            # Download the file
+            # Download to cache first
+            _logger_.info(f'Downloading to cache: {cache_path}')
             s3_client.download_file(
                 Bucket=self.bucket,
                 Key=self.key,
-                Filename=local_path,
+                Filename=str(cache_path),
             )
+
+            # Write metadata for future cache validation
+            self._write_metadata(metadata_path, checksum)
+
+            # Copy from cache to destination
+            shutil.copy2(cache_path, local_path)
 
             _logger_.info(f'Download successful: {local_path}')
 
@@ -169,7 +323,7 @@ class S3Fixture(BaseFixture):
             if not local_path.endswith('.mcap'):
                 _logger_.warning(f'Downloaded file does not have .mcap extension: {local_path}')
 
-            return McapFixture(path=local_path)
+            return Mcap(path=local_path)
 
         except NoCredentialsError as e:
             _logger_.error('AWS credentials not found.')
