@@ -114,6 +114,13 @@ def add_arguments(parser):
         help='Path to environment file to load variables from.',
     )
 
+    parser.add_argument(
+        '--analyze',
+        action='store',
+        default=None,
+        help='Run id of a previous run to only perform analysis on.',
+    )
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='replay integration testing tool.')
@@ -143,10 +150,11 @@ def run(parser, args):
 
     test_module = _load_python_file_as_module(args.package_name, args.replay_test_file)
 
-    runner = ReplayTestingRunner(test_module)
+    runner = ReplayTestingRunner(test_module, run_id=args.analyze)
+    if not args.analyze:
+        runner.filter_fixtures()
+        runner.run()
 
-    runner.filter_fixtures()
-    runner.run()
     exit_code, junit_xml_path = runner.analyze()
 
     # Each individual test case should have its own xUnit report in the
