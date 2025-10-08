@@ -34,7 +34,7 @@ class RunnerArgs(BaseModel):
 
 class ReplayRunParams(BaseModel):
     name: str
-    params: dict
+    params: dict = {}
     runner_args: RunnerArgs = RunnerArgs()
 
 
