@@ -26,7 +26,6 @@ from replay_testing import (
     McapFixture,
     ReplayRunParams,
     ReplayTestingRunner,
-    RunnerArgs,
     analyze,
     fixtures,
     get_message_mcap_reader,
@@ -142,9 +141,7 @@ def test_analyze():
         required_input_topics = ['/vehicle/cmd_vel']
         expected_output_topics = ['/user/cmd_vel']
 
-    @run.parameterize([
-        ReplayRunParams(name='analyze', runner_args=RunnerArgs(playback_rate=1.0)),
-    ])
+    @run.default()
     class Run:
         def generate_launch_description(self) -> LaunchDescription:
             return LaunchDescription([
