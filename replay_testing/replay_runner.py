@@ -43,10 +43,6 @@ from .replay_test_result import ReplayTestResult
 _logger_ = get_logger()
 
 
-def fmtintro(something):
-    return f'{something} ({type(something)})'
-
-
 class ReplayTestingRunner:
     _replay_results_directory: Path
     _replay_fixtures: list[ReplayFixture]
