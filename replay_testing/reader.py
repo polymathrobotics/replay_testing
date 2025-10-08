@@ -31,6 +31,6 @@ def get_sequential_mcap_reader(mcap_path: Path):
 
 
 def get_message_mcap_reader(mcap_path: Path) -> McapReader:
-    with mcap_path.open('rb') as file:
-        reader = make_reader(file, decoder_factories=[DecoderFactory()])
-        return reader
+    file = mcap_path.open('rb')
+    reader = make_reader(file, decoder_factories=[DecoderFactory()])
+    return reader
