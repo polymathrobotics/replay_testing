@@ -1,4 +1,3 @@
-
 # Copyright (c) 2025-present Polymath Robotics, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,30 +23,14 @@ find_package(ament_cmake_python REQUIRED)
 include(cmake/install_mcap.cmake)
 
 # Install Python modules and entry points
-ament_python_install_package(${PROJECT_NAME})
-
-# Install data files (e.g., test fixtures)
-install(DIRECTORY test/fixtures/
-  DESTINATION share/${PROJECT_NAME}/test/fixtures
-)
-
-install(DIRECTORY test/replay_tests/
-  DESTINATION share/${PROJECT_NAME}/test/replay_tests
-)
-
-install(PROGRAMS replay_testing/cli.py
-  DESTINATION lib/${PROJECT_NAME}
-  RENAME replay_test
+ament_python_install_package(${PROJECT_NAME}
+  SCRIPTS_DESTINATION lib/${PROJECT_NAME}
 )
 
 # Expose cmake modules for use by others
 install(
   DIRECTORY cmake
   DESTINATION share/${PROJECT_NAME}
-)
-
-ament_package(
-  CONFIG_EXTRAS "${PROJECT_NAME}-extras.cmake"
 )
 
 if(BUILD_TESTING)
@@ -69,3 +52,7 @@ if(BUILD_TESTING)
     endif()
   endif()
 endif()
+
+ament_package(
+  CONFIG_EXTRAS "${PROJECT_NAME}-extras.cmake"
+)

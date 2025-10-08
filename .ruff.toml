@@ -12,9 +12,9 @@ skip-magic-trailing-comma = false
 line-ending = "lf"
 
 [lint]
-select = ["E4", "E7", "E9", "F", "I"]
+select = ["E4", "E7", "E9", "F", "I", "PTH"]
 # Rules intended for future application
-# select = ["N", "D", "C90", "PTH", "UP", "PERF", "RUF"]
+# select = ["N", "D", "C90", "UP", "PERF", "RUF"]
 ignore = []
 fixable = ["ALL"]
 unfixable = []

@@ -14,6 +14,7 @@
 #
 
 from enum import Enum
+from pathlib import Path
 from typing import Optional
 
 from mcap_ros2.reader import McapReader
@@ -38,7 +39,7 @@ class ReplayRunParams(BaseModel):
 
 
 class McapFixture(BaseModel):
-    path: str
+    path: Path
     reader: Optional[McapReader] = None
 
     class Config:

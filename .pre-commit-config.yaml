@@ -49,6 +49,10 @@ repos:
       - id: ruff-format
       - id: ruff
         args: [--fix]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.18.2
+    hooks:
+      - id: mypy
   # CMake
   - repo: https://github.com/cmake-lint/cmake-lint
     rev: 1.4.3

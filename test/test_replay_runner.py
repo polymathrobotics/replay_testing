@@ -14,8 +14,8 @@
 #
 
 import json
-import os
 import types
+from pathlib import Path
 
 import mcap_ros2.reader
 import pytest
@@ -34,10 +34,10 @@ from replay_testing import (
     run,
 )
 
-replay_testing_dir = get_package_share_directory('replay_testing')
+fixtures_dir = Path(get_package_share_directory('replay_testing')) / 'test' / 'fixtures'
 
-cmd_vel_only_fixture = os.path.join(replay_testing_dir, 'test', 'fixtures', 'cmd_vel_only.mcap')
-cmd_vel_only_2_fixture = os.path.join(replay_testing_dir, 'test', 'fixtures', 'cmd_vel_only_2.mcap')
+cmd_vel_only_fixture = fixtures_dir / 'cmd_vel_only.mcap'
+cmd_vel_only_2_fixture = fixtures_dir / 'cmd_vel_only_2.mcap'
 
 
 def test_fixtures():

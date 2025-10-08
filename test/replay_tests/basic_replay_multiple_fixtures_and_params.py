@@ -14,10 +14,9 @@
 #
 
 import json
-import os
+from pathlib import Path
 
 import mcap_ros2.reader
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
@@ -29,15 +28,12 @@ from replay_testing import (
     run,
 )
 
-replay_testing_dir = get_package_share_directory('replay_testing')
-
-cmd_vel_only_fixture = os.path.join(replay_testing_dir, 'test', 'fixtures', 'cmd_vel_only.mcap')
-cmd_vel_only_2_fixture = os.path.join(replay_testing_dir, 'test', 'fixtures', 'cmd_vel_only_2.mcap')
+fixtures_dir = Path(__file__).parent.parent / 'fixtures'
 
 
 @fixtures.parameterize([
-    McapFixture(path=cmd_vel_only_fixture),
-    McapFixture(path=cmd_vel_only_2_fixture),
+    McapFixture(path=fixtures_dir / 'cmd_vel_only.mcap'),
+    McapFixture(path=fixtures_dir / 'cmd_vel_only_2.mcap'),
 ])
 class Fixtures:
     required_input_topics = ['/vehicle/cmd_vel']
