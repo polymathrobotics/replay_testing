@@ -13,9 +13,9 @@
 # limitations under the License.
 #
 
-from .. import BaseFixture, McapFixture
 from ..logging_config import get_logger
-from ..models import ReplayTestingPhase
+from ..models import McapFixture, ReplayTestingPhase
+from ..remote_fixtures import BaseFixture
 
 _logger_ = get_logger()
 
