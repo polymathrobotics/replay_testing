@@ -15,7 +15,8 @@
 
 import datetime
 import socket
-import xml.etree.ElementTree as ET
+from pathlib import Path
+from xml.etree import ElementTree as ET
 
 from termcolor import colored
 
@@ -24,9 +25,9 @@ from .logging_config import get_logger
 _logger_ = get_logger()
 
 
-def write_xml_to_file(xml_tree: ET.ElementTree, xml_path: str):
+def write_xml_to_file(xml_tree: ET.ElementTree, xml_path: Path):
     """Write an XML tree to a file."""
-    with open(xml_path, 'wb') as f:
+    with xml_path.open('wb') as f:
         xml_tree.write(f, encoding='utf-8', xml_declaration=True)
 
 
@@ -37,7 +38,7 @@ def _format_file_link(file_path: str):
     return colored_file_link
 
 
-def unittest_results_to_xml(*, name='replay_test', test_results=dict) -> ET:
+def unittest_results_to_xml(*, name='replay_test', test_results=dict) -> ET.ElementTree:
     """Serialize multiple unittest.TestResult objects into a JUnit-compatible XML document."""
     # The `testsuites` element is the root of the XML result.
     test_suites = ET.Element('testsuites')
@@ -54,7 +55,7 @@ def unittest_results_to_xml(*, name='replay_test', test_results=dict) -> ET:
 
     _logger_.debug(f'Writing test results to XML: {name}')
 
-    for _, fixture_results in test_results.items():
+    for fixture_results in test_results.values():
         for result_index, test_result in enumerate(fixture_results):
             unittest_result = test_result['result']
             run_fixture_path = test_result['run_fixture_path']
@@ -114,9 +115,10 @@ def unittest_results_to_xml(*, name='replay_test', test_results=dict) -> ET:
     return tree
 
 
-def pretty_log_junit_xml(et: ET, path: str):
+def pretty_log_junit_xml(et: ET.ElementTree, path: Path):
     try:
         root = et.getroot()
+        assert root
         # Extract high-level information from the testsuites
         testsuites_name = root.attrib.get('name', 'Unnamed Test Suite')
         total_tests = root.attrib.get('tests', '0')
@@ -124,7 +126,7 @@ def pretty_log_junit_xml(et: ET, path: str):
         total_failures = root.attrib.get('failures', '0')
         total_errors = root.attrib.get('errors', '0')
 
-        path_link = _format_file_link(path)
+        path_link = _format_file_link(str(path))
         _logger_.info('=========================================')
         _logger_.info(f'JUnit XML Report ({path_link})')
         # Log high-level summary
@@ -166,7 +168,7 @@ def pretty_log_junit_xml(et: ET, path: str):
                 if failure is not None:
                     failed_txt = colored('FAILED', 'red')
                     _logger_.info(f'      Status: {failed_txt}')
-                    _logger_.info(f'      Failure Message: {failure.text.strip()}')
+                    _logger_.info(f'      Failure Message: {failure.text.strip() if failure.text else "Not provided"}')
                 else:
                     passed_txt = colored('PASSED', 'green')
                     _logger_.info(f'      Status: {passed_txt}')

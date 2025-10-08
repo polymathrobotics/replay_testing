@@ -13,23 +13,20 @@
 # limitations under the License.
 #
 
-import os
 import sys
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 import pytest
-from ament_index_python.packages import get_package_share_directory
 
 from replay_testing.cli import main
 
-replay_testing_dir = get_package_share_directory('replay_testing')
+basic_replay = Path(__file__).parent / 'replay_tests' / 'basic_replay.py'
 
 
 def test_cli_with_replay_test_file_argument():
-    replay_file_path = os.path.join(replay_testing_dir, 'test', 'replay_tests', 'basic_replay.py')
-
     # Mock sys.argv for the CLI arguments
-    sys.argv = ['replay_test', replay_file_path]
+    sys.argv = ['replay_test', str(basic_replay)]
 
     with pytest.raises(SystemExit) as pytest_wrapped_e:
         main()
@@ -39,12 +36,11 @@ def test_cli_with_replay_test_file_argument():
     assert pytest_wrapped_e.value.code == 0
 
 
-def test_cli_xml_output_success(capsys):
-    xml_path = os.path.join('/tmp', 'test.xml')
-    replay_file_path = os.path.join(replay_testing_dir, 'test', 'replay_tests', 'basic_replay.py')
+def test_cli_xml_output_success(capsys, tmp_path):
+    xml_path = tmp_path / 'test.xml'
 
     # Mock sys.argv for the CLI arguments
-    sys.argv = ['replay_test', replay_file_path, '--junit-xml', xml_path, '--verbose']
+    sys.argv = ['replay_test', str(basic_replay), '--junit-xml', str(xml_path), '--verbose']
 
     with pytest.raises(SystemExit) as pytest_wrapped_e:
         main()

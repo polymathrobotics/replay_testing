@@ -94,7 +94,7 @@ class S3Fixture(BaseFixture):
             if aws_session_token or os.getenv('AWS_SESSION_TOKEN'):
                 self.session_kwargs['aws_session_token'] = aws_session_token or os.getenv('AWS_SESSION_TOKEN')
 
-            self.client_kwargs = {}
+            self.client_kwargs: dict[str, str | None] = {}
             self.client_kwargs['service_name'] = 's3'
             self.client_kwargs['region_name'] = region_name or os.getenv('AWS_DEFAULT_REGION')
             self.client_kwargs['endpoint_url'] = endpoint_url or os.getenv('AWS_S3_ENDPOINT_URL')
@@ -113,7 +113,7 @@ class S3Fixture(BaseFixture):
         session = boto3.Session(**self.session_kwargs) if self.session_kwargs else boto3.Session()
         return session.client(**self.client_kwargs)
 
-    def download(self, destination_folder: str) -> McapFixture:
+    def download(self, destination_folder: Path) -> McapFixture:
         """Download fixture from S3.
 
         Args:
@@ -126,15 +126,15 @@ class S3Fixture(BaseFixture):
             RuntimeError: If download fails
         """
         # Extract filename from S3 key
-        filename = os.path.basename(self.key)
+        filename = Path(self.key).name
         if not filename:
             raise TypeError(f'No valid path provided: {filename}')
 
         # Ensure destination folder exists
-        Path(destination_folder).mkdir(parents=True, exist_ok=True)
+        destination_folder.mkdir(parents=True, exist_ok=True)
 
         # Full path for downloaded file
-        local_path = os.path.join(destination_folder, filename)
+        local_path = destination_folder / filename
 
         _logger_.info(f'Downloading s3://{self.bucket}/{self.key} to {local_path}')
 
@@ -162,11 +162,11 @@ class S3Fixture(BaseFixture):
             _logger_.info(f'Download successful: {local_path}')
 
             # Verify the downloaded file exists
-            if not os.path.exists(local_path):
+            if not local_path.exists():
                 raise RuntimeError(f'Downloaded file not found at {local_path}')
 
             # Verify it's an MCAP file
-            if not local_path.endswith('.mcap'):
+            if not local_path.suffix == '.mcap':
                 _logger_.warning(f'Downloaded file does not have .mcap extension: {local_path}')
 
             return McapFixture(path=local_path)

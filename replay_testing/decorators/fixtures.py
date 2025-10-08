@@ -15,6 +15,7 @@
 
 from ..logging_config import get_logger
 from ..models import McapFixture, ReplayTestingPhase
+from ..remote_fixtures import BaseFixture
 
 _logger_ = get_logger()
 
@@ -49,5 +50,5 @@ class fixtures:
         return cls
 
     @staticmethod
-    def parameterize(fixture_list: list[McapFixture]):
+    def parameterize(fixture_list: list[McapFixture | BaseFixture]):
         return fixtures(fixture_list=fixture_list)

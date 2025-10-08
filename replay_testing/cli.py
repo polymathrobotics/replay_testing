@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 # Copyright (c) 2025-present Polymath Robotics, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +19,7 @@ import logging
 import os
 import shutil
 import sys
+from pathlib import Path
 
 from replay_testing import ReplayTestingRunner, get_logger
 
@@ -36,14 +34,14 @@ def _load_python_file_as_module(test_module_name, python_file_path):
     return module
 
 
-def _load_env_file(env_file_path):
+def _load_env_file(env_file_path: Path):
     """Load environment variables from a file."""
-    if not os.path.isfile(env_file_path):
+    if not env_file_path.is_file():
         raise FileNotFoundError(f"Environment file '{env_file_path}' does not exist")
 
     _logger_.info(f'Loading environment variables from {env_file_path}')
 
-    with open(env_file_path, 'r') as f:
+    with env_file_path.open('r') as f:
         for line_num, line in enumerate(f, 1):
             line = line.strip()
 
@@ -73,7 +71,7 @@ def _load_env_file(env_file_path):
 
 def add_arguments(parser):
     """Add arguments to the CLI parser."""
-    parser.add_argument('replay_test_file', help='Path to the replay test.')
+    parser.add_argument('replay_test_file', type=Path, help='Path to the replay test.')
 
     parser.add_argument(
         '--package-name',
@@ -132,16 +130,14 @@ def run(parser, args):
 
     # Load the test file as a module and make sure it has the required
     # components to run it as a replay test
-    if not os.path.isfile(args.replay_test_file):
+    if not args.replay_test_file.is_file():
         # Note to future reader: parser.error also exits as a side effect
-        parser.error("Test file '{}' does not exist".format(args.replay_test_file))
+        parser.error(f"Test file '{args.replay_test_file}' does not exist")
 
-    args.replay_test_file = os.path.abspath(args.replay_test_file)
-    replay_test_file_basename = os.path.splitext(os.path.basename(args.replay_test_file))[0]
     if not args.package_name:
-        args.package_name = replay_test_file_basename
+        args.package_name = args.replay_test_file.stem
 
-    test_module = _load_python_file_as_module(args.package_name, args.replay_test_file)
+    test_module = _load_python_file_as_module(args.package_name, args.replay_test_file.absolute())
 
     runner = ReplayTestingRunner(test_module)
 

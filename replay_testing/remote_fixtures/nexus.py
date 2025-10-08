@@ -16,6 +16,7 @@
 import base64
 import os
 import subprocess
+from pathlib import Path
 
 from ..logging_config import get_logger
 from ..models import McapFixture
@@ -35,7 +36,7 @@ class NexusFixture(BaseFixture):
     def __init__(self, path: str):
         self.nexus_path = path
 
-    def download(self, destination_folder: str) -> McapFixture:
+    def download(self, destination_folder: Path) -> McapFixture:
         """Download fixtures from Nexus repository.
 
         Returns:
@@ -57,6 +58,8 @@ class NexusFixture(BaseFixture):
 
         nexus_filename = self.nexus_path.split('/')[-1]
 
+        curl_dest = destination_folder / nexus_filename
+
         curl_command = [
             'curl',
             '-v',
@@ -64,15 +67,15 @@ class NexusFixture(BaseFixture):
             f'{username}:{decoded_password}',
             '-sL',
             '-o',
-            f'{destination_folder}/{nexus_filename}',
+            str(curl_dest),
             f'{server}/repository/{repo}/{self.nexus_path}',
         ]
 
         result = subprocess.run(curl_command, capture_output=True, text=True)
 
         if result.returncode == 0:
-            _logger_.info(f'Download successful: {destination_folder}/{nexus_filename}')
-            return McapFixture(path=f'{destination_folder}/{nexus_filename}')
+            _logger_.info(f'Download successful: {curl_dest}')
+            return McapFixture(path=curl_dest)
         else:
             _logger_.error(f'Download failed for {self.nexus_path}')
             _logger_.error(f'STDOUT: {result.stdout}')

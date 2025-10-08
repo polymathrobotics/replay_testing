@@ -14,13 +14,14 @@
 #
 
 import abc
+from pathlib import Path
 
 from ..models import McapFixture
 
 
 class BaseFixture(abc.ABC):
     @abc.abstractmethod
-    def download(self, destination: str) -> McapFixture:
+    def download(self, destination: Path) -> McapFixture:
         """Download the fixture files and return a McapFixture object.
 
         This method must be implemented by child classes to retrieve
