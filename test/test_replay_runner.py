@@ -19,7 +19,6 @@ from pathlib import Path
 
 import mcap_ros2.reader
 import pytest
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
@@ -35,7 +34,7 @@ from replay_testing import (
     run,
 )
 
-fixtures_dir = Path(get_package_share_directory('replay_testing')) / 'test' / 'fixtures'
+fixtures_dir = Path(__file__).parent / 'fixtures'
 
 cmd_vel_only_fixture = fixtures_dir / 'cmd_vel_only.mcap'
 cmd_vel_only_2_fixture = fixtures_dir / 'cmd_vel_only_2.mcap'

@@ -8,6 +8,7 @@
   <maintainer email="emerson@polymathrobotics.com">Emerson Knapp</maintainer>
   <license>Apache License 2.0</license>
   <author email="troy@polymathrobotics.com">Troy Gibb</author>
+  <author email="emerson@polymathrobotics.com">Emerson Knapp</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
@@ -23,8 +24,6 @@
   <exec_depend>rosbag2_storage_mcap</exec_depend>
 
   <test_depend>ament_cmake_pytest</test_depend>
-  <test_depend>ament_cmake_xmllint</test_depend>
-  <test_depend>ament_index_python</test_depend>
   <test_depend>geometry_msgs</test_depend>
   <test_depend>python3-junitparser</test_depend>
   <test_depend>python3-pytest</test_depend>

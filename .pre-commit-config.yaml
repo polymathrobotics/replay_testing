@@ -30,6 +30,11 @@ repos:
       - id: yamllint
         # args: [--strict, -c=/path/to/.yamllint]
         args: [-d, "{extends: default, rules: {line-length: {max: 150}}}"]
+  # XML
+  - repo: https://github.com/emersonknapp/ament_xmllint
+    rev: v0.1
+    hooks:
+      - id: ament_xmllint
   # Markdown
   - repo: https://github.com/jackdewinter/pymarkdown
     rev: v0.9.28

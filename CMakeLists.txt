@@ -34,18 +34,18 @@ install(
 )
 
 if(BUILD_TESTING)
+  find_package(ament_cmake_pytest REQUIRED)
+  include(cmake/add_replay_test.cmake)
+
   # TODO(troy): Once https://github.com/polymathrobotics/replay_testing/issues/2 is resolved, remove.
   if($ENV{USE_MCAP_PIP})
-    find_package(ament_cmake_xmllint REQUIRED)
-    ament_xmllint()
-
-    include(cmake/add_replay_test.cmake)
-
-    find_package(ament_cmake_pytest REQUIRED)
     ament_add_pytest_test(pytest ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
     add_replay_test(test/replay_tests/basic_replay.py)
-    add_replay_test(test/replay_tests/s3_replay.py)
+
+    if($ENV{AWS_BUCKET})
+      add_replay_test(test/replay_tests/s3_replay.py)
+    endif()
 
     if($ENV{USE_NEXUS})
       add_replay_test(test/replay_tests/nexus_replay.py)
