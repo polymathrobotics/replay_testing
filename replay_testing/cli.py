@@ -124,7 +124,7 @@ def run(parser, args):
     if args.env_file:
         try:
             # TODO(troy): Replace with dotenv package
-            _load_env_file(args.env_file)
+            _load_env_file(Path(args.env_file))
         except Exception as e:
             parser.error(f'Failed to load environment file: {e}')
 
