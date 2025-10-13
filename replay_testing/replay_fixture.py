@@ -24,17 +24,17 @@ from .utils import find_mcap_files
 
 
 class ReplayFixture:
-    input_fixture: McapFixture = None
-    filtered_fixture: McapFixture = None
-    run_fixtures: list[McapFixture] = None
+    input_fixture: McapFixture
+    filtered_fixture: McapFixture
+    run_fixtures: list[McapFixture]
 
-    base_path: str
+    base_path: Path
 
-    def __init__(self, base_folder: str, fixture: McapFixture):
+    def __init__(self, base_dir: Path, fixture: McapFixture):
         self.run_fixtures = []
-        self.base_path = base_folder
+        self.base_path = base_dir
         self.input_fixture = fixture
-        self.filtered_fixture = McapFixture(path=self.base_path + '/filtered_fixture.mcap')
+        self.filtered_fixture = McapFixture(path=self.base_path / 'filtered_fixture.mcap')
 
     def cleanup_run_fixtures(self):
         for run_fixture in self.run_fixtures:
@@ -44,7 +44,7 @@ class ReplayFixture:
             if len(mcap_files) == 0:
                 raise ValueError(f'No mcap files found in {mcap_folder}')
             mcap_file_path = mcap_files[0]
-            new_path = shutil.move(mcap_file_path, Path(mcap_folder).parent)
+            new_path = Path(shutil.move(mcap_file_path, mcap_folder.parent))
             shutil.rmtree(mcap_folder)
 
             run_fixture.path = new_path

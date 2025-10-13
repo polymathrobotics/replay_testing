@@ -14,6 +14,7 @@
 #
 
 from enum import Enum
+from pathlib import Path
 from typing import Optional
 
 from mcap_ros2.reader import McapReader
@@ -28,17 +29,17 @@ class ReplayTestingPhase(Enum):
 
 class RunnerArgs(BaseModel):
     use_clock: bool = True
-    playback_rate: float = 5.0
+    playback_rate: float = 1.0
 
 
 class ReplayRunParams(BaseModel):
     name: str
-    params: dict
+    params: dict = {}
     runner_args: RunnerArgs = RunnerArgs()
 
 
 class McapFixture(BaseModel):
-    path: str
+    path: Path
     reader: Optional[McapReader] = None
 
     class Config:

@@ -14,13 +14,15 @@
 #
 
 import os
+from pathlib import Path
 
 
-def find_mcap_files(input_dir):
+def find_mcap_files(input_dir: Path) -> list[Path]:
     """Recursively find all .mcap files in the input directory."""
     mcap_files = []
-    for root, dirs, files in os.walk(input_dir):
+    # NOTE: Path.walk is introduced in Python 3.12, we are currently targeting 3.10
+    for root, _, files in os.walk(input_dir):
         for file in files:
             if file.endswith('.mcap'):
-                mcap_files.append(os.path.join(root, file))
+                mcap_files.append(Path(root) / file)
     return mcap_files
