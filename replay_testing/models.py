@@ -28,7 +28,7 @@ class ReplayTestingPhase(Enum):
 
 class RunnerArgs(BaseModel):
     use_clock: bool = True
-    playback_rate: float = 5.0
+    playback_rate: float = 1.0
 
 
 class ReplayRunParams(BaseModel):

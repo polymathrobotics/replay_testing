@@ -132,8 +132,8 @@ class ReplayTestingRunner:
                 cmd=['ros2', 'bag', 'record', '-s', 'mcap', '-o', run_fixture.path, '--all'],
                 output='screen',
             ),
-            test_ld,
             player_action,  # Add the MCAP playback action
+            test_ld,
             on_exit_handler,  # Add the event handler to shutdown after playback finishes
         ])
 
