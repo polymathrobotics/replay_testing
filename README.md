@@ -135,21 +135,23 @@ When `use_clock=False`, the replay will:
 
 The analyze step is run after the mcap from the `run` is recorded and written. It is a basic wrapper over `unittest.TestCase`, so any `unittest` assertions are built in.
 
-It also wraps an initialized MCAP reader `self.reader` ([MCAP docs](https://mcap.dev/docs/python/mcap-ros2-apidoc/mcap_ros2.reader)) that you can use to assert against expected message output.
+It also wraps an initialized MCAP reader `self.reader` (a `rosbag2_py.SequentialReader`) that you can use to assert against expected message output.
 
 Example:
 
 ```python
+from replay_testing import read_messages
+
 @analyze
 class Analyze:
     def test_cmd_vel(self):
-        msgs_it = mcap_ros2.reader.read_ros2_messages(
+        msgs_it = read_messages(
             self.reader, topics=["/user/cmd_vel"]
         )
 
-        msgs = [msg for msg in msgs_it]
+        msgs = [(topic_name, msg, timestamp) for topic_name, msg, timestamp in msgs_it]
         assert len(msgs) >= 1
-        assert msgs[0].channel.topic == "/user/cmd_vel"
+        assert msgs[0][0] == "/user/cmd_vel"
 ```
 
 ### Full Example
@@ -160,11 +162,11 @@ from replay_testing import (
     run,
     analyze,
     McapFixture,
+    read_messages,
 )
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
-import mcap_ros2.reader
 import pathlib
 
 
@@ -201,13 +203,13 @@ class Run:
 @analyze
 class AnalyzeBasicReplay:
     def test_cmd_vel(self):
-        msgs_it = mcap_ros2.reader.read_ros2_messages(
+        msgs_it = read_messages(
             self.reader, topics=["/user/cmd_vel"]
         )
 
-        msgs = [msg for msg in msgs_it]
+        msgs = [(topic_name, msg, timestamp) for topic_name, msg, timestamp in msgs_it]
         assert len(msgs) >= 1
-        assert msgs[0].channel.topic == "/user/cmd_vel"
+        assert msgs[0][0] == "/user/cmd_vel"
 
 ```
 

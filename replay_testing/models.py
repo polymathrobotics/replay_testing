@@ -17,7 +17,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-from mcap_ros2.reader import McapReader
+import rosbag2_py
 from pydantic import BaseModel
 
 
@@ -40,7 +40,7 @@ class ReplayRunParams(BaseModel):
 
 class McapFixture(BaseModel):
     path: Path
-    reader: Optional[McapReader] = None
+    reader: Optional[rosbag2_py.SequentialReader] = None
 
     class Config:
         arbitrary_types_allowed = True

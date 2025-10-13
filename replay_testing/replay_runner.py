@@ -35,7 +35,7 @@ from .filter import filter_mcap
 from .junit_to_xml import pretty_log_junit_xml, unittest_results_to_xml, write_xml_to_file
 from .logging_config import get_logger
 from .models import McapFixture, ReplayRunParams, ReplayTestingPhase
-from .reader import get_message_mcap_reader, get_sequential_mcap_reader
+from .reader import get_sequential_mcap_reader
 from .remote_fixtures import BaseFixture
 from .replay_fixture import ReplayFixture
 from .replay_test_result import ReplayTestResult
@@ -236,7 +236,7 @@ class ReplayTestingRunner:
             analyze_cls: type[Any] = self._get_stage_class(ReplayTestingPhase.ANALYZE)
 
             for run_fixture in replay_fixture.run_fixtures:
-                reader = get_message_mcap_reader(run_fixture.path)
+                reader = get_sequential_mcap_reader(run_fixture.path)
 
                 class AnalyzeWithReader(analyze_cls):
                     def setUp(inner_self):
