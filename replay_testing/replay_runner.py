@@ -56,7 +56,12 @@ class ReplayTestingRunner:
             self._test_run_uuid = uuid.uuid4()
 
         # For Gitlab CI. TODO(troy): This should just be an env variable set by .gitlab-ci.yml
-        result_base = Path('test_results') if os.environ.get('CI') else Path(tempfile.gettempdir())
+        _logger_.info(f'Replay User: {os.environ.get("USER")}, CI: {os.environ.get("CI")}')
+        result_base = (
+            Path('test_results')
+            if os.environ.get('CI') or os.environ.get('USER') == 'buildfarm'
+            else Path(tempfile.gettempdir())
+        )
         self._replay_directory = result_base / 'replay_testing'
         self._replay_results_directory = self._replay_directory / str(self._test_run_uuid)
 
