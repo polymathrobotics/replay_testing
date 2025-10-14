@@ -395,7 +395,6 @@ def test_only_analyze():
 
     test_module.Analyze = AnalyzeSecondCmdVel
     second_runner = ReplayTestingRunner(test_module, run_id=runner.run_id)
-    second_runner.analyze()
     exit_code, _ = second_runner.analyze(write_junit=False)
     assert exit_code == 1
 
