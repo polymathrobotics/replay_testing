@@ -15,10 +15,8 @@
 from pathlib import Path
 
 import rosbag2_py
-from mcap_ros2.decoder import DecoderFactory
-from mcap_ros2.reader import McapReader, make_reader
-
-# TODO: Figure out how to consolidate the two readers
+from rclpy.serialization import deserialize_message
+from rosidl_runtime_py.utilities import get_message
 
 
 def get_sequential_mcap_reader(mcap_path: Path):
@@ -30,7 +28,30 @@ def get_sequential_mcap_reader(mcap_path: Path):
     return reader
 
 
-def get_message_mcap_reader(mcap_path: Path) -> McapReader:
-    file = mcap_path.open('rb')
-    reader = make_reader(file, decoder_factories=[DecoderFactory()])
-    return reader
+def read_messages(reader: rosbag2_py.SequentialReader, topics: list[str]):
+    """
+    Read and deserialize messages from specific topics in an MCAP file.
+
+    Args:
+        reader: SequentialReader instance from get_sequential_mcap_reader
+        topics: List of topic names to read from
+
+    Yields:
+        Tuples of (topic_name, ros_msg, timestamp) where ros_msg is the deserialized ROS2 message
+    """
+    topic_set = set(topics) if topics else None
+
+    # Get topic type map
+    topic_types = {}
+    for topic_metadata in reader.get_all_topics_and_types():
+        topic_types[topic_metadata.name] = topic_metadata.type
+
+    while reader.has_next():
+        topic_name, data, timestamp = reader.read_next()
+
+        # Filter by topic if topics list is provided
+        if topic_set is None or topic_name in topic_set:
+            # Deserialize the message
+            msg_type = get_message(topic_types[topic_name])
+            msg = deserialize_message(data, msg_type)
+            yield (topic_name, msg, timestamp)

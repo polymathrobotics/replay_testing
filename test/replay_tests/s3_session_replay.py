@@ -16,11 +16,10 @@
 import os
 
 import boto3
-import mcap_ros2.reader
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
-from replay_testing import analyze, fixtures, run
+from replay_testing import analyze, fixtures, read_messages, run
 from replay_testing.remote_fixtures import S3Fixture
 
 # This example uses the default credential chain (env vars, ~/.aws/credentials, IAM roles, etc.)
@@ -75,8 +74,8 @@ class Run:
 @analyze
 class AnalyzeBasicReplay:
     def test_cmd_vel(self):
-        msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
+        msgs_it = read_messages(self.reader, topics=['/user/cmd_vel'])
 
-        msgs = [msg for msg in msgs_it]
+        msgs = [(topic_name, msg, timestamp) for topic_name, msg, timestamp in msgs_it]
         assert len(msgs) >= 1
-        assert msgs[0].channel.topic == '/user/cmd_vel'
+        assert msgs[0][0] == '/user/cmd_vel'

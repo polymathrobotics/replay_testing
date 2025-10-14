@@ -15,7 +15,6 @@
 
 import pathlib
 
-import mcap_ros2.reader
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
@@ -23,6 +22,7 @@ from replay_testing import (
     McapFixture,
     analyze,
     fixtures,
+    read_messages,
     run,
 )
 
@@ -60,8 +60,8 @@ class Run:
 @analyze
 class AnalyzeBasicReplay:
     def test_expected_failure(self):
-        msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
+        msgs_it = read_messages(self.reader, topics=['/user/cmd_vel'])
 
-        msgs = [msg for msg in msgs_it]
+        msgs = [(topic_name, msg, timestamp) for topic_name, msg, timestamp in msgs_it]
         assert len(msgs) >= 1
-        assert msgs[0].channel.topic == '/nonexistent/cmd_vel'
+        assert msgs[0][0] == '/nonexistent/cmd_vel'

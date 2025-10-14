@@ -29,8 +29,6 @@
   <test_depend>python3-pytest</test_depend>
   <test_depend>ros2run</test_depend>
   <test_depend>ros2topic</test_depend>
-  <!-- TODO(troy): Once https://github.com/polymathrobotics/replay_testing/issues/2 is resolved, remove. -->
-  <test_depend condition="$USE_MCAP_PIP == 1">mcap-ros2-support</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -17,7 +17,6 @@ import json
 import types
 from pathlib import Path
 
-import mcap_ros2.reader
 import pytest
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
@@ -28,8 +27,8 @@ from replay_testing import (
     ReplayTestingRunner,
     analyze,
     fixtures,
-    get_message_mcap_reader,
     get_sequential_mcap_reader,
+    read_messages,
     run,
 )
 
@@ -124,12 +123,12 @@ def test_run():
     assert '/vehicle/cmd_vel' in topic_names
     assert '/user/cmd_vel' in topic_names
 
-    msg_reader = get_message_mcap_reader(run_fixture.path)
-    msgs_it = mcap_ros2.reader.read_ros2_messages(msg_reader, topics=['/user/cmd_vel'])
+    msg_reader = get_sequential_mcap_reader(run_fixture.path)
+    msgs_it = read_messages(msg_reader, topics=['/user/cmd_vel'])
 
-    msgs = [msg for msg in msgs_it]
+    msgs = [(topic_name, msg, timestamp) for topic_name, msg, timestamp in msgs_it]
     assert len(msgs) >= 1
-    assert msgs[0].channel.topic == '/user/cmd_vel'
+    assert msgs[0][0] == '/user/cmd_vel'
     return
 
 
@@ -165,11 +164,11 @@ def test_analyze():
     @analyze
     class Analyze:
         def test_cmd_vel(self):
-            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
+            msgs_it = read_messages(self.reader, topics=['/user/cmd_vel'])
 
-            msgs = [msg for msg in msgs_it]
+            msgs = [(topic_name, msg, timestamp) for topic_name, msg, timestamp in msgs_it]
             assert len(msgs) >= 1
-            assert msgs[0].channel.topic == '/user/cmd_vel'
+            assert msgs[0][0] == '/user/cmd_vel'
 
     test_module.Fixtures = Fixtures
     test_module.Run = Run
@@ -266,11 +265,11 @@ def test_multiple_fixtures():
     @analyze
     class Analyze:
         def test_cmd_vel(self):
-            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
+            msgs_it = read_messages(self.reader, topics=['/user/cmd_vel'])
 
-            msgs = [msg for msg in msgs_it]
+            msgs = [(topic_name, msg, timestamp) for topic_name, msg, timestamp in msgs_it]
             assert len(msgs) >= 1
-            assert msgs[0].channel.topic == '/user/cmd_vel'
+            assert msgs[0][0] == '/user/cmd_vel'
 
     test_module.Fixtures = Fixtures
     test_module.Run = Run
@@ -333,11 +332,11 @@ def test_parametric_sweep():
     @analyze
     class Analyze:
         def test_cmd_vel(self):
-            msgs_it = mcap_ros2.reader.read_ros2_messages(self.reader, topics=['/user/cmd_vel'])
+            msgs_it = read_messages(self.reader, topics=['/user/cmd_vel'])
 
-            msgs = [msg for msg in msgs_it]
+            msgs = [(topic_name, msg, timestamp) for topic_name, msg, timestamp in msgs_it]
             assert len(msgs) >= 1
-            assert msgs[0].channel.topic == '/user/cmd_vel'
+            assert msgs[0][0] == '/user/cmd_vel'
 
     test_module.Fixtures = Fixtures
     test_module.Run = Run

@@ -17,7 +17,7 @@ import shutil
 from pathlib import Path
 
 from .models import McapFixture
-from .reader import get_message_mcap_reader
+from .reader import get_sequential_mcap_reader
 from .utils import find_mcap_files
 
 # Class responsible for managing all replay fixtures
@@ -50,4 +50,4 @@ class ReplayFixture:
             run_fixture.path = new_path
 
     def initialize_run_reader(self):
-        self.run_fixture.reader = get_message_mcap_reader(self.run_fixture.path)
+        self.run_fixture.reader = get_sequential_mcap_reader(self.run_fixture.path)
