@@ -93,7 +93,7 @@ class ReplayFixture:
 
     def generate_run_fixture(self, key) -> Mcap:
         """Add a run fixture to the list."""
-        run_fixture = Mcap(path=self.path / 'runs' / f'run_{key}_{self.name}.mcap')
+        run_fixture = Mcap(path=self.path / 'runs' / f'run_{key}_{self.name}')
         self.run_fixtures.append(run_fixture)
         return run_fixture
 

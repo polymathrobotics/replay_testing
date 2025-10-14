@@ -68,8 +68,15 @@ def unittest_results_to_xml(*, name='replay_test', test_results=dict) -> ET.Elem
             suite.set('hostname', hostname)
             suite.set('timestamp', timestamp)
             suite.set('time', '0')
-            suite.set('run_fixture', run_fixture_path)
-            suite.set('filter_fixture', filtered_fixture_path)
+
+            # Add fixture paths as properties (standard JUnit XML approach for custom metadata)
+            properties = ET.SubElement(suite, 'properties')
+            run_fixture_prop = ET.SubElement(properties, 'property')
+            run_fixture_prop.set('name', 'run_fixture')
+            run_fixture_prop.set('value', run_fixture_path)
+            filter_fixture_prop = ET.SubElement(properties, 'property')
+            filter_fixture_prop.set('name', 'filter_fixture')
+            filter_fixture_prop.set('value', filtered_fixture_path)
 
             total_tests += unittest_result.testsRun
             total_failures += len(unittest_result.failures)
@@ -139,8 +146,19 @@ def pretty_log_junit_xml(et: ET.ElementTree, path: Path):
         # Iterate over each testsuite element
         for testsuite in root.findall('testsuite'):
             suite_name = testsuite.attrib.get('name', 'Unnamed Test Suite')
-            run_fixture = testsuite.attrib.get('run_fixture', 'N/A')
-            filter_fixture = testsuite.attrib.get('filter_fixture', 'N/A')
+
+            # Extract fixture paths from properties element
+            run_fixture = 'N/A'
+            filter_fixture = 'N/A'
+            properties = testsuite.find('properties')
+            if properties is not None:
+                for prop in properties.findall('property'):
+                    prop_name = prop.attrib.get('name')
+                    prop_value = prop.attrib.get('value')
+                    if prop_name == 'run_fixture' and prop_value is not None:
+                        run_fixture = prop_value
+                    elif prop_name == 'filter_fixture' and prop_value is not None:
+                        filter_fixture = prop_value
 
             # Print the suite details
             _logger_.info(f'  Suite: {suite_name}')
