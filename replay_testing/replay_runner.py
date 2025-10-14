@@ -55,8 +55,8 @@ class ReplayTestingRunner:
         else:
             self._test_run_uuid = uuid.uuid4()
 
-        # For Gitlab CI. TODO(troy): This should just be an env variable set by .gitlab-ci.yml
-        _logger_.info(f'Replay User: {os.environ.get("USER")}, CI: {os.environ.get("CI")}')
+        # Print a whole list of env info
+        _logger_.info(f'  ENV VARS: {os.environ}')
         result_base = (
             Path('test_results')
             if os.environ.get('CI') or os.environ.get('USER') == 'buildfarm'
