@@ -183,10 +183,15 @@ def pretty_log_junit_xml(et: ET.ElementTree, path: Path):
 
                 # Check for failure elements and log details
                 failure = testcase.find('failure')
+                error = testcase.find('error')
                 if failure is not None:
                     failed_txt = colored('FAILED', 'red')
                     _logger_.info(f'      Status: {failed_txt}')
                     _logger_.info(f'      Failure Message: {failure.text.strip() if failure.text else "Not provided"}')
+                elif error is not None:
+                    error_txt = colored('ERROR', 'red')
+                    _logger_.info(f'      Status: {error_txt}')
+                    _logger_.info(f'      Error Message: {error.text.strip() if error.text else "Not provided"}')
                 else:
                     passed_txt = colored('PASSED', 'green')
                     _logger_.info(f'      Status: {passed_txt}')
