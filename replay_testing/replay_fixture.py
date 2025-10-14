@@ -36,8 +36,6 @@ FILTERED_FIXTURE_NAME = 'filtered.mcap'
 class ReplayFixture:
     """Class to manage replay fixtures for testing."""
 
-    # TODO(Troy: This is what is responsible for managing object keys!!!
-
     input_fixture: Mcap
     filtered_fixture: Mcap
     run_fixtures: list[Mcap]
@@ -45,12 +43,9 @@ class ReplayFixture:
     base_path: Path
 
     def __init__(self, replay_results_dir: Path, fixture_key: str):
-        self.run_fixtures = []
         self.replay_results_dir = replay_results_dir
         self.fixture_key = fixture_key
-        # self.base_path = base_dir
-        # self.input_fixture = fixture
-        # self.filtered_fixture = Mcap(path=self.base_path / 'filtered_fixture.mcap')
+        self.run_fixtures = self._get_previous_run_fixtures()
 
     @property
     def name(self) -> str:
@@ -98,9 +93,19 @@ class ReplayFixture:
 
     def generate_run_fixture(self, key) -> Mcap:
         """Add a run fixture to the list."""
-        run_fixture = Mcap(path=self.path / f'run_{key}_{self.name}.mcap')
+        run_fixture = Mcap(path=self.path / 'runs' / f'run_{key}_{self.name}')
         self.run_fixtures.append(run_fixture)
         return run_fixture
+
+    def _get_previous_run_fixtures(self) -> list:
+        """Check for existing run fixtures in the runs directory. Returns empty list if none found."""
+        run_fixtures = []
+        runs_dir = self.path / 'runs'
+        if runs_dir.exists() and runs_dir.is_dir():
+            for run_fixture in runs_dir.iterdir():
+                if run_fixture.is_file():
+                    run_fixtures.append(Mcap(path=run_fixture))
+        return run_fixtures
 
     def cleanup_run_fixtures(self):
         """

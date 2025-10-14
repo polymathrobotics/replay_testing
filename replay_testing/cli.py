@@ -97,6 +97,13 @@ def add_arguments(parser):
     )
 
     parser.add_argument(
+        '--analyze',
+        action='store',
+        default=None,
+        help='Run ID of a previous run to only perform analysis on. Useful for re-analyzing a previous run while iterating on analyze logic.',
+    )
+
+    parser.add_argument(
         '--junit-xml',
         action='store',
         dest='xmlpath',
@@ -139,10 +146,12 @@ def run(parser, args):
 
     test_module = _load_python_file_as_module(args.package_name, args.replay_test_file.absolute())
 
-    runner = ReplayTestingRunner(test_module)
+    runner = ReplayTestingRunner(test_module, run_id=args.analyze)
 
-    runner.filter_fixtures()
-    runner.run()
+    if not args.analyze:
+        runner.filter_fixtures()
+        runner.run()
+
     exit_code, junit_xml_path = runner.analyze()
 
     # Each individual test case should have its own xUnit report in the
