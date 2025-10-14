@@ -37,6 +37,18 @@ fixtures_dir = Path(__file__).parent / 'fixtures'
 cmd_vel_only_fixture = fixtures_dir / 'cmd_vel_only.mcap'
 cmd_vel_only_2_fixture = fixtures_dir / 'cmd_vel_only_2.mcap'
 
+pub_cmd_vel = [
+    'ros2',
+    'topic',
+    'pub',
+    '--use-sim-time',
+    '-r',
+    '10',
+    '/user/cmd_vel',
+    'geometry_msgs/msg/Twist',
+    '{linear: {x: 1.0}, angular: {z: 0.5}}',
+]
+
 
 def test_fixtures():
     test_module = types.ModuleType('test_module')
@@ -90,17 +102,7 @@ def test_run():
         def generate_launch_description(self) -> LaunchDescription:
             return LaunchDescription([
                 ExecuteProcess(
-                    cmd=[
-                        'ros2',
-                        'topic',
-                        'pub',
-                        '--use-sim-time',
-                        '-r',
-                        '10',
-                        '/user/cmd_vel',
-                        'geometry_msgs/msg/Twist',
-                        '{linear: {x: 1.0}, angular: {z: 0.5}}',
-                    ],
+                    cmd=pub_cmd_vel,
                     name='topic_pub',
                     output='screen',
                 )
@@ -145,17 +147,7 @@ def test_analyze():
         def generate_launch_description(self) -> LaunchDescription:
             return LaunchDescription([
                 ExecuteProcess(
-                    cmd=[
-                        'ros2',
-                        'topic',
-                        'pub',
-                        '--use-sim-time',
-                        '-r',
-                        '10',
-                        '/user/cmd_vel',
-                        'geometry_msgs/msg/Twist',
-                        '{linear: {x: 1.0}, angular: {z: 0.5}}',
-                    ],
+                    cmd=pub_cmd_vel,
                     name='topic_pub',
                     output='screen',
                 )
@@ -196,17 +188,7 @@ def test_failed_analyze():
         def generate_launch_description(self) -> LaunchDescription:
             return LaunchDescription([
                 ExecuteProcess(
-                    cmd=[
-                        'ros2',
-                        'topic',
-                        'pub',
-                        '--use-sim-time',
-                        '-r',
-                        '10',
-                        '/user/cmd_vel',
-                        'geometry_msgs/msg/Twist',
-                        '{linear: {x: 1.0}, angular: {z: 0.5}}',
-                    ],
+                    cmd=pub_cmd_vel,
                     name='topic_pub',
                     output='screen',
                 )
@@ -246,17 +228,7 @@ def test_multiple_fixtures():
         def generate_launch_description(self) -> LaunchDescription:
             return LaunchDescription([
                 ExecuteProcess(
-                    cmd=[
-                        'ros2',
-                        'topic',
-                        'pub',
-                        '--use-sim-time',
-                        '-r',
-                        '10',
-                        '/user/cmd_vel',
-                        'geometry_msgs/msg/Twist',
-                        '{linear: {x: 1.0}, angular: {z: 0.5}}',
-                    ],
+                    cmd=pub_cmd_vel,
                     name='topic_pub',
                     output='screen',
                 )
@@ -374,4 +346,58 @@ def test_parametric_sweep():
 
     assert len(replay_fixtures) == 1
     assert len(replay_fixtures[0].run_fixtures) == 2
+    return
+
+
+def test_only_analyze():
+    test_module = types.ModuleType('test_module')
+
+    @fixtures.parameterize([LocalFixture(path=cmd_vel_only_fixture)])
+    class Fixtures:
+        required_input_topics = ['/vehicle/cmd_vel']
+        expected_output_topics = ['/user/cmd_vel']
+
+    @run.default()
+    class Run:
+        def generate_launch_description(self) -> LaunchDescription:
+            return LaunchDescription([
+                ExecuteProcess(
+                    cmd=pub_cmd_vel,
+                    name='topic_pub',
+                    output='screen',
+                )
+            ])
+
+    @analyze
+    class Analyze:
+        def test_cmd_vel(self):
+            msgs_it = read_messages(self.reader, topics=['/user/cmd_vel'])
+
+            msgs = [msg for msg in msgs_it]
+            assert len(msgs) >= 1
+            assert msgs[0][0] == '/user/cmd_vel'
+
+    test_module.Fixtures = Fixtures
+    test_module.Run = Run
+    test_module.Analyze = Analyze
+    runner = ReplayTestingRunner(test_module)
+
+    runner.filter_fixtures()
+    runner.run()
+    exit_code, _ = runner.analyze()
+    assert exit_code == 0
+
+    # Second analyze
+    @analyze
+    class Analyze2:
+        def test_cmd_vel(self):
+            # Expect failure
+            assert False
+
+    test_module.Analyze = Analyze2
+    second_runner = ReplayTestingRunner(test_module, run_id=runner.run_id)
+    second_runner.analyze()
+    exit_code, _ = second_runner.analyze()
+    assert exit_code == 1
+
     return

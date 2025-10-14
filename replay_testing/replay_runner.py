@@ -33,9 +33,9 @@ from termcolor import colored
 
 from .junit_to_xml import pretty_log_junit_xml, unittest_results_to_xml, write_xml_to_file
 from .logging_config import get_logger
-from .models import ReplayRunParams, ReplayTestingPhase
+from .models import Mcap, ReplayRunParams, ReplayTestingPhase
 from .reader import get_sequential_mcap_reader
-from .replay_fixture import FixtureType, ReplayFixture
+from .replay_fixture import FILTERED_FIXTURE_NAME, FixtureType, ReplayFixture
 from .replay_test_result import ReplayTestResult
 
 _logger_ = get_logger()
@@ -44,18 +44,27 @@ _logger_ = get_logger()
 class ReplayTestingRunner:
     _replay_results_directory: Path
     _replay_fixtures: list[ReplayFixture]
-    # todo: Validate input in test_module
 
-    def __init__(self, test_module):
+    def __init__(self, test_module, *, run_id: str = ''):
         self._replay_fixtures = []
         self._test_module = test_module
-        # TODO: Change to /tmp/replay_testing/{test_run_uuid}
-        self._test_run_uuid = uuid.uuid4()
+        if run_id:
+            self._test_run_uuid = uuid.UUID(run_id)
+        else:
+            self._test_run_uuid = uuid.uuid4()
 
         # For Gitlab CI. TODO(troy): This should just be an env variable set by .gitlab-ci.yml
         result_base = Path('test_results') if os.environ.get('CI') else Path(tempfile.gettempdir())
         self._replay_directory = result_base / 'replay_testing'
         self._replay_results_directory = self._replay_directory / str(self._test_run_uuid)
+
+        if run_id:
+            self._replay_fixtures = self._get_prev_run_fixtures()
+
+    @property
+    def run_id(self) -> str:
+        """Return the run ID as a string."""
+        return str(self._test_run_uuid)
 
     def _log_stage(self, stage: ReplayTestingPhase, is_start: bool = True):
         stage_name = stage.name
@@ -78,6 +87,22 @@ class ReplayTestingRunner:
             if phase == stage:
                 return cls
         raise ValueError(f'No class found for {stage} stage')
+
+    def _get_prev_run_fixtures(self) -> list[ReplayFixture]:
+        replay_fixture_list = []
+        for dir in self._replay_results_directory.iterdir():
+            if not dir.is_dir():
+                continue
+            replay_fixture = ReplayFixture(self._replay_results_directory, dir.name)
+
+            # Populate the filtered_fixture if it exists
+            filtered_mcap_path = dir / FILTERED_FIXTURE_NAME
+            if filtered_mcap_path.exists():
+                replay_fixture.filtered_fixture = Mcap(path=filtered_mcap_path)
+
+            replay_fixture_list.append(replay_fixture)
+
+        return replay_fixture_list
 
     def _create_run_launch_description(
         self, filtered_fixture, run_fixture, test_ld: launch.LaunchDescription, run, params: ReplayRunParams

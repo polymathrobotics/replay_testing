@@ -23,6 +23,12 @@ All robotics developers use replay testing in one form or another. This package 
 ros2 run replay_testing replay_test [REPLAY_TEST_PATH]
 ```
 
+Run `@analyze` only on a previous run:
+
+```
+ros2 run replay_testing replay_test [REPLAY_TEST_PATH] --analyze [RUN_ID]
+```
+
 For other args:
 
 ```
