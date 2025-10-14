@@ -19,17 +19,17 @@ from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
 from replay_testing import (
-    McapFixture,
+    LocalFixture,
     analyze,
     fixtures,
     read_messages,
     run,
 )
 
-cmd_vel_only_fixture = (pathlib.Path(__file__).parent.parent / 'fixtures' / 'cmd_vel_only.mcap').as_posix()
+cmd_vel_only_fixture = pathlib.Path(__file__).parent.parent / 'fixtures' / 'cmd_vel_only.mcap'
 
 
-@fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
+@fixtures.parameterize([LocalFixture(path=cmd_vel_only_fixture)])
 class FilterFixtures:
     required_input_topics = ['/vehicle/cmd_vel']
     expected_output_topics = ['/user/cmd_vel']

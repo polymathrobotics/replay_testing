@@ -11,36 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-
-from enum import Enum
+import shutil
 from pathlib import Path
-from typing import Optional
 
-import rosbag2_py
-from pydantic import BaseModel
-
-
-class ReplayTestingPhase(Enum):
-    FIXTURES = 'fixtures'
-    RUN = 'run'
-    ANALYZE = 'analyze'
+from ..models import Mcap
+from .base_fixture import BaseFixture
 
 
-class RunnerArgs(BaseModel):
-    use_clock: bool = True
-    playback_rate: float = 1.0
+class LocalFixture(BaseFixture):
+    def __init__(self, path: Path):
+        self.path = path
 
+    @property
+    def fixture_key(self) -> str:
+        return Path(self.path).stem
 
-class ReplayRunParams(BaseModel):
-    name: str
-    params: dict
-    runner_args: RunnerArgs = RunnerArgs()
-
-
-class Mcap(BaseModel):
-    path: Path
-    reader: Optional[rosbag2_py.SequentialReader] = None
-
-    class Config:
-        arbitrary_types_allowed = True
+    def download(self, destination: Path) -> Mcap:
+        mcap_path = destination / self.path.name
+        shutil.copy(self.path, mcap_path)
+        return Mcap(path=str(mcap_path))

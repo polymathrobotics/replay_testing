@@ -20,7 +20,7 @@ from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
 from replay_testing import (
-    McapFixture,
+    LocalFixture,
     ReplayRunParams,
     analyze,
     fixtures,
@@ -32,8 +32,8 @@ fixtures_dir = Path(__file__).parent.parent / 'fixtures'
 
 
 @fixtures.parameterize([
-    McapFixture(path=fixtures_dir / 'cmd_vel_only.mcap'),
-    McapFixture(path=fixtures_dir / 'cmd_vel_only_2.mcap'),
+    LocalFixture(path=fixtures_dir / 'cmd_vel_only.mcap'),
+    LocalFixture(path=fixtures_dir / 'cmd_vel_only_2.mcap'),
 ])
 class Fixtures:
     required_input_topics = ['/vehicle/cmd_vel']

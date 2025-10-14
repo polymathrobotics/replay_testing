@@ -66,7 +66,7 @@ For collecting and preparing your fixtures to be run against your launch specifi
 Here is how you use it:
 
 ```python
-@fixtures.parameterize([McapFixture(path="/tmp/mcap/my_data.mcap")])
+@fixtures.parameterize([LocalFixture(path="/tmp/mcap/my_data.mcap")])
 class FilterFixtures:
     required_input_topics = ["/vehicle/cmd_vel"]
     expected_output_topics = ["/user/cmd_vel"]
@@ -161,7 +161,7 @@ from replay_testing import (
     fixtures,
     run,
     analyze,
-    McapFixture,
+    LocalFixture,
     read_messages,
 )
 from launch import LaunchDescription
@@ -170,7 +170,7 @@ from launch.actions import ExecuteProcess
 import pathlib
 
 
-@fixtures.parameterize([McapFixture(path="/tmp/mcap/my_data.mcap")])
+@fixtures.parameterize([LocalFixture(path="/tmp/mcap/my_data.mcap")])
 class Fixtures:
     input_topics = ["/vehicle/cmd_vel"]
     output_topics = ["/user/cmd_vel"]
