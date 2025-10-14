@@ -372,8 +372,7 @@ def test_only_analyze():
     class Analyze:
         def test_cmd_vel(self):
             msgs_it = read_messages(self.reader, topics=['/user/cmd_vel'])
-
-            msgs = [msg for msg in msgs_it]
+            msgs = [(topic_name, msg, timestamp) for topic_name, msg, timestamp in msgs_it]
             assert len(msgs) >= 1
             assert msgs[0][0] == '/user/cmd_vel'
 
@@ -389,12 +388,12 @@ def test_only_analyze():
 
     # Second analyze
     @analyze
-    class Analyze2:
+    class AnalyzeSecondCmdVel:
         def test_cmd_vel(self):
             # Expect failure
             assert False
 
-    test_module.Analyze = Analyze2
+    test_module.Analyze = AnalyzeSecondCmdVel
     second_runner = ReplayTestingRunner(test_module, run_id=runner.run_id)
     second_runner.analyze()
     exit_code, _ = second_runner.analyze()
