@@ -13,9 +13,9 @@
 # limitations under the License.
 #
 
+from ..fixtures import BaseFixture
 from ..logging_config import get_logger
-from ..models import McapFixture, ReplayTestingPhase
-from ..remote_fixtures import BaseFixture
+from ..models import Mcap, ReplayTestingPhase
 
 _logger_ = get_logger()
 
@@ -50,5 +50,5 @@ class fixtures:
         return cls
 
     @staticmethod
-    def parameterize(fixture_list: list[McapFixture | BaseFixture]):
+    def parameterize(fixture_list: list[Mcap | BaseFixture]):
         return fixtures(fixture_list=fixture_list)

@@ -16,12 +16,15 @@
 from .decorators.analyze import analyze
 from .decorators.fixtures import fixtures
 from .decorators.run import run
+from .fixtures import BaseFixture, LocalFixture, NexusFixture, S3Fixture
 from .junit_to_xml import unittest_results_to_xml
 from .logging_config import get_logger
-from .models import McapFixture, ReplayRunParams, RunnerArgs
+from .models import ReplayRunParams, RunnerArgs
 from .reader import get_sequential_mcap_reader, read_messages
-from .remote_fixtures import BaseFixture, NexusFixture
 from .replay_runner import ReplayTestingRunner
+
+# Alias for backward compatibility. Should be removed in future versions.
+McapFixture = LocalFixture
 
 __all__ = [
     'fixtures',
@@ -30,11 +33,13 @@ __all__ = [
     'ReplayTestingRunner',
     'get_sequential_mcap_reader',
     'read_messages',
-    'McapFixture',
     'ReplayRunParams',
     'RunnerArgs',
     'unittest_results_to_xml',
     'get_logger',
     'BaseFixture',
+    'LocalFixture',
+    'McapFixture',
     'NexusFixture',
+    'S3Fixture',
 ]

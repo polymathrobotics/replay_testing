@@ -23,7 +23,7 @@ import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 
 from ..logging_config import get_logger
-from ..models import McapFixture
+from ..models import Mcap
 from .base_fixture import BaseFixture
 
 _logger_ = get_logger()
@@ -241,14 +241,18 @@ class S3Fixture(BaseFixture):
         except IOError as e:
             _logger_.warning(f'Failed to write metadata: {e}')
 
-    def download(self, destination_folder: Path) -> McapFixture:
+    @property
+    def fixture_key(self) -> str:
+        return Path(self.key).stem
+
+    def download(self, destination_folder: Path) -> Mcap:
         """Download fixture from S3.
 
         Args:
             destination_folder: Local folder to download the file to
 
         Returns:
-            McapFixture: A McapFixture object with path to the downloaded file
+            Mcap: A Mcap object with path to the downloaded file
 
         Raises:
             RuntimeError: If download fails
@@ -279,7 +283,7 @@ class S3Fixture(BaseFixture):
                 # Copy from cache to destination
                 shutil.copy2(cache_path, local_path)
                 _logger_.info(f'Copied from cache to {local_path}')
-                return McapFixture(path=local_path)
+                return Mcap(path=local_path)
 
             # Cache miss - need to download
             _logger_.info(f'Cache miss, downloading s3://{self.bucket}/{self.key}')
@@ -319,7 +323,7 @@ class S3Fixture(BaseFixture):
             if not local_path.suffix == '.mcap':
                 _logger_.warning(f'Downloaded file does not have .mcap extension: {local_path}')
 
-            return McapFixture(path=local_path)
+            return Mcap(path=local_path)
 
         except NoCredentialsError as e:
             _logger_.error('AWS credentials not found.')

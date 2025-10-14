@@ -16,8 +16,7 @@
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
-from replay_testing import analyze, fixtures, read_messages, run
-from replay_testing.remote_fixtures import S3Fixture
+from replay_testing import S3Fixture, analyze, fixtures, read_messages, run
 
 
 @fixtures.parameterize([S3Fixture(key='generic/cmd_vel_only.mcap')])

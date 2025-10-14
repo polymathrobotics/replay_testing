@@ -22,7 +22,7 @@ from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 
 from replay_testing import (
-    McapFixture,
+    LocalFixture,
     ReplayRunParams,
     ReplayTestingRunner,
     analyze,
@@ -41,7 +41,7 @@ cmd_vel_only_2_fixture = fixtures_dir / 'cmd_vel_only_2.mcap'
 def test_fixtures():
     test_module = types.ModuleType('test_module')
 
-    @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
+    @fixtures.parameterize([LocalFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
         required_input_topics = ['/vehicle/cmd_vel']
         expected_output_topics = []
@@ -65,7 +65,7 @@ def test_fixtures():
 def test_fixtures_raises_err():
     test_module = types.ModuleType('test_module')
 
-    @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
+    @fixtures.parameterize([LocalFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
         required_input_topics = ['/vehicle/cmd_vel', '/does_not_exist']
         expected_output_topics = []
@@ -80,7 +80,7 @@ def test_fixtures_raises_err():
 def test_run():
     test_module = types.ModuleType('test_module')
 
-    @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
+    @fixtures.parameterize([LocalFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
         required_input_topics = ['/vehicle/cmd_vel']
         expected_output_topics = ['/user/cmd_vel']
@@ -135,7 +135,7 @@ def test_run():
 def test_analyze():
     test_module = types.ModuleType('test_module')
 
-    @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
+    @fixtures.parameterize([LocalFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
         required_input_topics = ['/vehicle/cmd_vel']
         expected_output_topics = ['/user/cmd_vel']
@@ -186,7 +186,7 @@ def test_analyze():
 def test_failed_analyze():
     test_module = types.ModuleType('test_module')
 
-    @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
+    @fixtures.parameterize([LocalFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
         required_input_topics = ['/vehicle/cmd_vel']
         expected_output_topics = ['/user/cmd_vel']
@@ -234,8 +234,8 @@ def test_multiple_fixtures():
     test_module = types.ModuleType('test_module')
 
     @fixtures.parameterize([
-        McapFixture(path=cmd_vel_only_fixture),
-        McapFixture(path=cmd_vel_only_2_fixture),
+        LocalFixture(path=cmd_vel_only_fixture),
+        LocalFixture(path=cmd_vel_only_2_fixture),
     ])
     class Fixtures:
         required_input_topics = ['/vehicle/cmd_vel']
@@ -292,10 +292,34 @@ def test_multiple_fixtures():
     return
 
 
+def test_against_duplicate_fixture_keys():
+    """Test that duplicate fixture keys raise an error."""
+    test_module = types.ModuleType('test_module')
+
+    # Both fixtures have the same stem name (cmd_vel_only), so they will have duplicate keys
+    @fixtures.parameterize([
+        LocalFixture(path=cmd_vel_only_fixture),
+        LocalFixture(path=cmd_vel_only_fixture),  # Duplicate key
+    ])
+    class Fixtures:
+        required_input_topics = ['/vehicle/cmd_vel']
+        expected_output_topics = []
+
+    test_module.Fixtures = Fixtures
+    runner = ReplayTestingRunner(test_module)
+
+    # Expect an error when trying to filter fixtures with duplicate keys
+    with pytest.raises((ValueError, RuntimeError)) as exc_info:
+        runner.filter_fixtures()
+
+    # Verify the error message mentions duplicate keys
+    assert 'duplicate' in str(exc_info.value).lower()
+
+
 def test_parametric_sweep():
     test_module = types.ModuleType('test_module')
 
-    @fixtures.parameterize([McapFixture(path=cmd_vel_only_fixture)])
+    @fixtures.parameterize([LocalFixture(path=cmd_vel_only_fixture)])
     class Fixtures:
         required_input_topics = ['/vehicle/cmd_vel']
         expected_output_topics = ['/user/cmd_vel']
