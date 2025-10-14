@@ -19,7 +19,7 @@ import tempfile
 import unittest
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import launch
 from launch import LaunchDescription
@@ -45,9 +45,11 @@ class ReplayTestingRunner:
     _replay_results_directory: Path
     _replay_fixtures: list[ReplayFixture]
 
-    def __init__(self, test_module, *, run_id: str = ''):
+    def __init__(self, test_module, *, run_id: Optional[str] = None):
         self._replay_fixtures = []
         self._test_module = test_module
+
+        # Check if run_id is truthy (not None and not empty string)
         if run_id:
             self._test_run_uuid = uuid.UUID(run_id)
         else:
@@ -58,6 +60,7 @@ class ReplayTestingRunner:
         self._replay_directory = result_base / 'replay_testing'
         self._replay_results_directory = self._replay_directory / str(self._test_run_uuid)
 
+        # Only load previous run fixtures if run_id is truthy
         if run_id:
             self._replay_fixtures = self._get_prev_run_fixtures()
 
