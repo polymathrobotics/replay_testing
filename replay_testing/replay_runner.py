@@ -59,7 +59,7 @@ class ReplayTestingRunner:
         _logger_.info(f'  ENV VARS: {os.environ}')
         result_base = (
             Path('test_results')
-            if os.environ.get('CI') or os.environ.get('USER') == 'buildfarm'
+            if os.environ.get('CI') or os.environ.get('AMENT_TEST_RESULTS_DIR')
             else Path(tempfile.gettempdir())
         )
         self._replay_directory = result_base / 'replay_testing'
