@@ -57,12 +57,16 @@ class ReplayTestingRunner:
 
         # Print a whole list of env info
         _logger_.info(f'  ENV VARS: {os.environ}')
-        result_base = (
-            Path('test_results')
-            if os.environ.get('CI') or os.environ.get('AMENT_TEST_RESULTS_DIR')
-            else Path(tempfile.gettempdir())
-        )
+
+        result_base = Path('test_results') if os.environ.get('CI') else Path(tempfile.gettempdir())
         self._replay_directory = result_base / 'replay_testing'
+
+        if not os.access(self._replay_directory, os.W_OK):
+            _logger_.error(
+                f'No write permission for directory: {self._replay_directory}. Setting to ./test_results/replay_testing'
+            )
+            self._replay_directory = Path('test_results') / 'replay_testing'
+
         self._replay_results_directory = self._replay_directory / str(self._test_run_uuid)
 
         # Only load previous run fixtures if run_id is truthy
@@ -163,9 +167,6 @@ class ReplayTestingRunner:
 
         fixture_cls = self._get_stage_class(ReplayTestingPhase.FIXTURES)
         fixture = fixture_cls()
-
-        if not os.access(self._replay_directory, os.W_OK):
-            raise PermissionError(f'No write permission for directory: {self._replay_directory}')
 
         self._replay_results_directory.mkdir(parents=True, exist_ok=True)
 
