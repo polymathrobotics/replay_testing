@@ -113,7 +113,6 @@ def unittest_results_to_xml(*, name='replay_test', test_results=dict) -> ET.Elem
 
     # Set the overall counts on the root `testsuites` element
     test_suites.set('tests', str(total_tests))
-    test_suites.set('successes', str(total_successes))
     test_suites.set('failures', str(total_failures))
     test_suites.set('errors', str(total_errors))
 
@@ -129,7 +128,6 @@ def pretty_log_junit_xml(et: ET.ElementTree, path: Path):
         # Extract high-level information from the testsuites
         testsuites_name = root.attrib.get('name', 'Unnamed Test Suite')
         total_tests = root.attrib.get('tests', '0')
-        total_successes = root.attrib.get('successes', '0')
         total_failures = root.attrib.get('failures', '0')
         total_errors = root.attrib.get('errors', '0')
 
@@ -139,7 +137,6 @@ def pretty_log_junit_xml(et: ET.ElementTree, path: Path):
         # Log high-level summary
         _logger_.info(f'Test Suite: {testsuites_name}')
         _logger_.info(f'Total Tests: {total_tests}')
-        _logger_.info(f'Successes: {total_successes}')
         _logger_.info(f'Failures: {total_failures}')
         _logger_.info(f'Errors: {total_errors}\n')
 
