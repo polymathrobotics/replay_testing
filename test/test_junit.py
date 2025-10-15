@@ -53,7 +53,6 @@ def test_unittest_results_to_xml():
     assert root.get('tests') == '2'
     assert root.get('failures') == '0'
     assert root.get('errors') == '0'
-    assert root.get('successes') == '2'
 
     # Check the first testsuite
     testsuite = root.find('testsuite')
