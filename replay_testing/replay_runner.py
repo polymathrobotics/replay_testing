@@ -55,9 +55,6 @@ class ReplayTestingRunner:
         else:
             self._test_run_uuid = uuid.uuid4()
 
-        # Print a whole list of env info
-        _logger_.info(f'  ENV VARS: {os.environ}')
-
         result_base = Path('test_results') if os.environ.get('CI') else Path(tempfile.gettempdir())
         self._replay_directory = result_base / 'replay_testing'
 
