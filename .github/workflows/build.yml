@@ -18,8 +18,8 @@ jobs:
             ubuntu: jammy
           - ros: jazzy
             ubuntu: noble
-          # - ros: kilted
-          #   ubuntu: noble-testing
+          - ros: kilted
+            ubuntu: noble
           - ros: rolling
             ubuntu: noble
     name: ROS 2 ${{ matrix.ros }}
