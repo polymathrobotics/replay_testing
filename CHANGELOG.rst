@@ -2,6 +2,13 @@
 Changelog for package replay_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added new `--analyze [RUN_ID]` for rerunning `@analyze` without re-executing the full replay.
+* Moved `McapFixture` to `LocalFixture`
+* Remove `mcap-ros2-support` dependency
+* Contributors: Troy Gibb, Emerson Knapp
+
 0.0.2 (2025-05-12)
 ------------------
 
