@@ -146,6 +146,24 @@ When `use_clock=True` (default), the replay framework will:
 When `use_clock=False`, the replay will:
 - Skip `/clock` topic publishing
 
+#### Termination Condition
+
+By default, the replay will run until all messages from the input MCAP are played back.
+After that, the `run` stops immediately and the `analyze` step is executed.
+
+To wait for `run` to finish instead of stopping immediately after playback, you can set a `ignore_playback_finish` flag in `ReplayRunParams`:
+
+```python
+from replay_testing import ReplayRunParams
+
+@run.default(params=ReplayRunParams(name='default', ignore_playback_finish=True))
+class Run:
+    def generate_launch_description(self) -> LaunchDescription:
+        # Your launch description here
+        # Note: Every node in the launch description must finish on its own. Otherwise, the test will hang.
+        pass
+```
+
 ### Analyze `@analyze`
 
 The analyze step is run after the mcap from the `run` is recorded and written. It is a basic wrapper over `unittest.TestCase`, so any `unittest` assertions are built in.
