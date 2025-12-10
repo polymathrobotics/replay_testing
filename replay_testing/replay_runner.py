@@ -139,25 +139,29 @@ class ReplayTestingRunner:
             output='screen',
         )
 
-        # Event handler to gracefully exit when the process finishes
-        on_exit_handler = RegisterEventHandler(
-            OnProcessExit(
-                target_action=player_action,
-                # Shutdown the launch service
-                on_exit=[launch.actions.EmitEvent(event=Shutdown())],
-            )
-        )
-
-        # Launch description with the event handler
-        return LaunchDescription([
+        # Launch description
+        ld = LaunchDescription([
             ExecuteProcess(
                 cmd=['ros2', 'bag', 'record', '-s', 'mcap', '-o', str(run_fixture.path), '--all'],
                 output='screen',
             ),
             test_ld,
             player_action,  # Add the MCAP playback action
-            on_exit_handler,  # Add the event handler to shutdown after playback finishes
         ])
+
+        if not params.ignore_playback_finish:
+            # Event handler to gracefully exit when the process finishes
+            on_exit_handler = RegisterEventHandler(
+                OnProcessExit(
+                    target_action=player_action,
+                    # Shutdown the launch service
+                    on_exit=[launch.actions.EmitEvent(event=Shutdown())],
+                )
+            )
+
+            ld.add_action(on_exit_handler)
+
+        return ld
 
     def filter_fixtures(self) -> list[ReplayFixture]:
         self._log_stage_start(ReplayTestingPhase.FIXTURES)

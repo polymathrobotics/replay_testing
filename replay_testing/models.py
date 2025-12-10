@@ -34,8 +34,9 @@ class RunnerArgs(BaseModel):
 
 class ReplayRunParams(BaseModel):
     name: str
-    params: dict
+    params: dict = {}
     runner_args: RunnerArgs = RunnerArgs()
+    ignore_playback_finish: bool = False
 
 
 class Mcap(BaseModel):
