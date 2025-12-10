@@ -160,7 +160,7 @@ class ReplayTestingRunner:
             )
 
             ld.add_action(on_exit_handler)
-        
+
         return ld
 
     def filter_fixtures(self) -> list[ReplayFixture]:

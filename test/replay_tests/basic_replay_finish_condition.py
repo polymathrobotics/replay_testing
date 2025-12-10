@@ -16,17 +16,17 @@
 import pathlib
 
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess, RegisterEventHandler, EmitEvent
-from launch.events import Shutdown
+from launch.actions import EmitEvent, ExecuteProcess, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
+from launch.events import Shutdown
 
 from replay_testing import (
     LocalFixture,
+    ReplayRunParams,
     analyze,
     fixtures,
     read_messages,
     run,
-    ReplayRunParams,
 )
 
 cmd_vel_only_fixture = pathlib.Path(__file__).parent.parent / 'fixtures' / 'cmd_vel_only.mcap'
@@ -42,28 +42,28 @@ class FilterFixtures:
 class Run:
     def generate_launch_description(self) -> LaunchDescription:
         target_process = ExecuteProcess(
-                cmd=[
-                    'ros2',
-                    'topic',
-                    'pub',
-                    '-r',
-                    '10',
-                    '-t',
-                    '20',
-                    '/user/cmd_vel',
-                    'geometry_msgs/msg/Twist',
-                    '{linear: {x: 1.0}, angular: {z: 0.5}}',
-                ],
-                name='topic_pub',
-                output='screen',
-            )
+            cmd=[
+                'ros2',
+                'topic',
+                'pub',
+                '-r',
+                '10',
+                '-t',
+                '20',
+                '/user/cmd_vel',
+                'geometry_msgs/msg/Twist',
+                '{linear: {x: 1.0}, angular: {z: 0.5}}',
+            ],
+            name='topic_pub',
+            output='screen',
+        )
         on_exit_handler = RegisterEventHandler(
-                OnProcessExit(
-                    target_action=target_process,
-                    # Shutdown the launch service
-                    on_exit=[EmitEvent(event=Shutdown())],
-                )
+            OnProcessExit(
+                target_action=target_process,
+                # Shutdown the launch service
+                on_exit=[EmitEvent(event=Shutdown())],
             )
+        )
         return LaunchDescription([
             target_process,
             on_exit_handler,
