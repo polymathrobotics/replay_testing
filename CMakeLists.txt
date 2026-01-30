@@ -20,8 +20,6 @@ project(replay_testing)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 
-include(cmake/install_mcap.cmake)
-
 # Install Python modules and entry points
 ament_python_install_package(${PROJECT_NAME}
   SCRIPTS_DESTINATION lib/${PROJECT_NAME}
