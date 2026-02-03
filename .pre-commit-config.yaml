@@ -58,6 +58,8 @@ repos:
     rev: v1.18.2
     hooks:
       - id: mypy
+        additional_dependencies:
+          - types-requests
   # CMake
   - repo: https://github.com/cmake-lint/cmake-lint
     rev: 1.4.3
