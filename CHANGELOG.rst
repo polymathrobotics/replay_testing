@@ -2,8 +2,8 @@
 Changelog for package replay_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2026-02-04)
+------------------
 * Nexus caching (`#37 <https://github.com/polymathrobotics/replay_testing/issues/37>`_)
 * Remove mcap binary dependency (`#35 <https://github.com/polymathrobotics/replay_testing/issues/35>`_)
 * Add extra nexus header options (`#36 <https://github.com/polymathrobotics/replay_testing/issues/36>`_)
