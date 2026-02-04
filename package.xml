@@ -5,9 +5,11 @@
   <version>0.0.3</version>
   <description>A testing library and CLI for replaying ROS nodes.</description>
   <maintainer email="troy@polymathrobotics.com">Troy Gibb</maintainer>
+  <maintainer email="troy.gibb@gmail.com">Troy Gibb</maintainer>
   <maintainer email="emerson@polymathrobotics.com">Emerson Knapp</maintainer>
   <license>Apache License 2.0</license>
   <author email="troy@polymathrobotics.com">Troy Gibb</author>
+  <author email="troy.gibb@gmail.com">Troy Gibb</author>
   <author email="emerson@polymathrobotics.com">Emerson Knapp</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
