@@ -123,7 +123,11 @@ def add_arguments(parser):
 def parse_arguments():
     parser = argparse.ArgumentParser(description='replay integration testing tool.')
     add_arguments(parser)
-    return parser, parser.parse_args()
+    # Use parse_known_args to allow extra arguments to pass through to the test file
+    args, unknown = parser.parse_known_args()
+    # Store unknown args for potential use by test files
+    args.unknown_args = unknown
+    return parser, args
 
 
 def run(parser, args):
