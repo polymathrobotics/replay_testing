@@ -15,6 +15,7 @@
 
 import inspect
 import os
+import re
 import tempfile
 import unittest
 import uuid
@@ -24,10 +25,14 @@ from typing import Any, Optional
 import launch
 from launch import LaunchDescription
 from launch.actions import (
+    EmitEvent,
     ExecuteProcess,
+    LogInfo,
+    OpaqueFunction,
     RegisterEventHandler,
+    TimerAction,
 )
-from launch.event_handlers import OnProcessExit
+from launch.event_handlers import OnProcessExit, OnProcessIO
 from launch.events import Shutdown
 from termcolor import colored
 
@@ -114,7 +119,13 @@ class ReplayTestingRunner:
         return replay_fixture_list
 
     def _create_run_launch_description(
-        self, filtered_fixture, run_fixture, test_ld: launch.LaunchDescription, run, params: ReplayRunParams
+        self,
+        filtered_fixture,
+        run_fixture,
+        test_ld: launch.LaunchDescription,
+        run,
+        params: ReplayRunParams,
+        expected_output_topics: Optional[list[str]] = None,
     ) -> launch.LaunchDescription:
         # Define the process action for playing the MCAP file
         cmd = [
@@ -139,15 +150,27 @@ class ReplayTestingRunner:
             output='screen',
         )
 
-        # Launch description
-        ld = LaunchDescription([
-            ExecuteProcess(
-                cmd=['ros2', 'bag', 'record', '-s', 'mcap', '-o', str(run_fixture.path), '--all'],
-                output='screen',
-            ),
-            test_ld,
-            player_action,  # Add the MCAP playback action
-        ])
+        recorder_action = ExecuteProcess(
+            cmd=['ros2', 'bag', 'record', '-s', 'mcap', '-o', str(run_fixture.path), '--all'],
+            output='screen',
+        )
+
+        actions: list = [recorder_action, test_ld]
+
+        if expected_output_topics:
+            # Gate the player on the recorder having subscribed to every expected output topic,
+            # so we don't lose messages to DDS discovery latency on short fixtures.
+            actions.extend(
+                self._build_recorder_ready_gate(
+                    recorder_action,
+                    expected_output_topics,
+                    player_action,
+                )
+            )
+        else:
+            actions.append(player_action)
+
+        ld = LaunchDescription(actions)
 
         if not params.ignore_playback_finish:
             # Event handler to gracefully exit when the process finishes
@@ -155,13 +178,69 @@ class ReplayTestingRunner:
                 OnProcessExit(
                     target_action=player_action,
                     # Shutdown the launch service
-                    on_exit=[launch.actions.EmitEvent(event=Shutdown())],
+                    on_exit=[EmitEvent(event=Shutdown())],
                 )
             )
 
             ld.add_action(on_exit_handler)
 
         return ld
+
+    @staticmethod
+    def _build_recorder_ready_gate(
+        recorder_action: ExecuteProcess,
+        expected_topics: list[str],
+        player_action: ExecuteProcess,
+        timeout_s: float = 10.0,
+    ) -> list:
+        # rosbag2_transport logs `Subscribed to topic '<name>'` at INFO on stderr for every
+        # subscription it establishes. Both humble and jazzy emit this exact format.
+        SUBSCRIBED_RE = re.compile(r"Subscribed to topic '([^']+)'")
+
+        expected = set(expected_topics)
+        subscribed: set[str] = set()
+        triggered = [False]
+
+        def on_recorder_io(event):
+            if triggered[0]:
+                return None
+            for line in event.text.decode('utf-8', errors='replace').splitlines():
+                m = SUBSCRIBED_RE.search(line)
+                if m:
+                    subscribed.add(m.group(1))
+            if expected <= subscribed:
+                triggered[0] = True
+                return [
+                    LogInfo(msg=f'[replay_testing] Recorder subscribed to {sorted(expected)}; starting player'),
+                    player_action,
+                ]
+            return None
+
+        def on_timeout(context):
+            if triggered[0]:
+                return None
+            missing = expected - subscribed
+            return [
+                LogInfo(
+                    msg=(
+                        f'[replay_testing] Readiness gate TIMEOUT after {timeout_s}s. '
+                        f'Recorder never subscribed to: {sorted(missing)}. '
+                        f'Subscribed: {sorted(subscribed)}.'
+                    )
+                ),
+                EmitEvent(event=Shutdown(reason='replay_testing recorder readiness gate timeout')),
+            ]
+
+        return [
+            RegisterEventHandler(
+                OnProcessIO(
+                    target_action=recorder_action,
+                    on_stdout=on_recorder_io,
+                    on_stderr=on_recorder_io,
+                )
+            ),
+            TimerAction(period=timeout_s, actions=[OpaqueFunction(function=on_timeout)]),
+        ]
 
     def filter_fixtures(self) -> list[ReplayFixture]:
         self._log_stage_start(ReplayTestingPhase.FIXTURES)
@@ -225,6 +304,14 @@ class ReplayTestingRunner:
         run_cls = self._get_stage_class(ReplayTestingPhase.RUN)
         run = run_cls()
 
+        fixture_cls = self._get_stage_class(ReplayTestingPhase.FIXTURES)
+        fixture = fixture_cls()
+        expected_output_topics = (
+            fixture.expected_output_topics
+            if hasattr(fixture, 'expected_output_topics')
+            else getattr(fixture, 'output_topics', None)
+        )
+
         for replay_fixture in self._replay_fixtures:
             if len(run.parameters) == 0:
                 raise ValueError('No parameters found for run')
@@ -238,7 +325,12 @@ class ReplayTestingRunner:
                 test_launch_description = run.generate_launch_description(param)
 
                 ld = self._create_run_launch_description(
-                    replay_fixture.filtered_fixture, run_fixture, test_launch_description, run, param
+                    replay_fixture.filtered_fixture,
+                    run_fixture,
+                    test_launch_description,
+                    run,
+                    param,
+                    expected_output_topics=expected_output_topics,
                 )
                 launch_service = launch.LaunchService()
                 launch_service.include_launch_description(ld)
