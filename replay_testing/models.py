@@ -30,6 +30,12 @@ class ReplayTestingPhase(Enum):
 class RunnerArgs(BaseModel):
     use_clock: bool = True
     playback_rate: float = 1.0
+    # Hold playback until the nodes under test are publishing. Without it they
+    # race the player, and on a short fixture the bag can finish before they
+    # advertise anything.
+    wait_for_stack: bool = True
+    wait_for_stack_timeout: float = 30.0
+    wait_for_stack_grace: float = 2.0
 
 
 class ReplayRunParams(BaseModel):

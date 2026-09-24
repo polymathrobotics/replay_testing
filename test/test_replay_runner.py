@@ -36,6 +36,8 @@ fixtures_dir = Path(__file__).parent / 'fixtures'
 
 cmd_vel_only_fixture = fixtures_dir / 'cmd_vel_only.mcap'
 cmd_vel_only_2_fixture = fixtures_dir / 'cmd_vel_only_2.mcap'
+# Carries /vehicle/cmd_vel plus /sensor/silent, declared with no messages.
+cmd_vel_and_empty_fixture = fixtures_dir / 'cmd_vel_and_empty.mcap'
 
 pub_cmd_vel = [
     'ros2',
@@ -399,3 +401,43 @@ def test_only_analyze():
     assert exit_code == 1
 
     return
+
+
+def test_a_declared_but_empty_input_is_reported_not_fatal():
+    """A recorded topic that produced nothing is still a faithful recording.
+
+    A sensor can legitimately fall silent for the whole window, and replaying
+    that silence is what the robot saw. Only the test knows which of its inputs
+    are worthless when empty, so this stage reports it and carries on.
+    """
+    test_module = types.ModuleType('test_module')
+
+    @fixtures.parameterize([LocalFixture(path=cmd_vel_and_empty_fixture)])
+    class Fixtures:
+        required_input_topics = ['/vehicle/cmd_vel', '/sensor/silent']
+        expected_output_topics = []
+
+    test_module.Fixtures = Fixtures
+    runner = ReplayTestingRunner(test_module)
+
+    replay_fixtures = runner.filter_fixtures()
+
+    assert len(replay_fixtures) == 1
+    reader = get_sequential_mcap_reader(replay_fixtures[0].filtered_fixture.path)
+    assert '/vehicle/cmd_vel' in [topic.name for topic in reader.get_all_topics_and_types()]
+
+
+def test_an_input_missing_from_the_bag_still_raises():
+    """Absent is different from silent: the bag cannot answer the question."""
+    test_module = types.ModuleType('test_module')
+
+    @fixtures.parameterize([LocalFixture(path=cmd_vel_and_empty_fixture)])
+    class Fixtures:
+        required_input_topics = ['/vehicle/cmd_vel', '/not_in_the_bag']
+        expected_output_topics = []
+
+    test_module.Fixtures = Fixtures
+    runner = ReplayTestingRunner(test_module)
+
+    with pytest.raises(AssertionError):
+        runner.filter_fixtures()

@@ -21,6 +21,7 @@ from .junit_to_xml import unittest_results_to_xml
 from .logging_config import get_logger
 from .models import ReplayRunParams, RunnerArgs
 from .reader import get_sequential_mcap_reader, read_messages
+from .regenerated_sources import RegeneratedSource, ReplaySourcePlan
 from .replay_runner import ReplayTestingRunner
 
 # Alias for backward compatibility. Should be removed in future versions.
@@ -33,6 +34,8 @@ __all__ = [
     'ReplayTestingRunner',
     'get_sequential_mcap_reader',
     'read_messages',
+    'RegeneratedSource',
+    'ReplaySourcePlan',
     'ReplayRunParams',
     'RunnerArgs',
     'unittest_results_to_xml',

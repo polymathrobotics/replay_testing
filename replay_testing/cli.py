@@ -25,6 +25,10 @@ from replay_testing import ReplayTestingRunner, get_logger
 
 _logger_ = get_logger()
 
+#: Where --output-dir points, exported for the test module to find. A test that
+#: writes artifacts of its own reads this to put them with the results.
+OUTPUT_DIR_ENV_VAR = 'REPLAY_TESTING_OUTPUT_DIR'
+
 
 def _load_python_file_as_module(test_module_name, python_file_path):
     """Load a given Python replay file (by path) as a Python module."""
@@ -112,6 +116,15 @@ def add_arguments(parser):
     )
 
     parser.add_argument(
+        '--output-dir',
+        action='store',
+        dest='output_dir',
+        default=None,
+        help='Directory to write replay results into. Defaults to test_results under CI '
+        'and the system temp directory otherwise.',
+    )
+
+    parser.add_argument(
         '--env',
         action='store',
         dest='env_file',
@@ -123,7 +136,11 @@ def add_arguments(parser):
 def parse_arguments():
     parser = argparse.ArgumentParser(description='replay integration testing tool.')
     add_arguments(parser)
-    return parser, parser.parse_args()
+    # Use parse_known_args to allow extra arguments to pass through to the test file
+    args, unknown = parser.parse_known_args()
+    # Store unknown args for potential use by test files
+    args.unknown_args = unknown
+    return parser, args
 
 
 def run(parser, args):
@@ -144,9 +161,17 @@ def run(parser, args):
     if not args.package_name:
         args.package_name = args.replay_test_file.stem
 
+    # A test can generate its own artifacts - rewritten parameter files, say -
+    # and those belong next to the run they describe, not in the system temp
+    # directory where nothing ties them back to it. The module is imported
+    # before the runner exists, so the destination is passed through the
+    # environment, which is the only channel available this early.
+    if args.output_dir:
+        os.environ[OUTPUT_DIR_ENV_VAR] = str(Path(args.output_dir).absolute())
+
     test_module = _load_python_file_as_module(args.package_name, args.replay_test_file.absolute())
 
-    runner = ReplayTestingRunner(test_module, run_id=args.analyze)
+    runner = ReplayTestingRunner(test_module, run_id=args.analyze, output_dir=args.output_dir)
 
     if not args.analyze:
         runner.filter_fixtures()

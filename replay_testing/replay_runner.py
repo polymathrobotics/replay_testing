@@ -45,7 +45,7 @@ class ReplayTestingRunner:
     _replay_results_directory: Path
     _replay_fixtures: list[ReplayFixture]
 
-    def __init__(self, test_module, *, run_id: Optional[str] = None):
+    def __init__(self, test_module, *, run_id: Optional[str] = None, output_dir: Optional[str] = None):
         self._replay_fixtures = []
         self._test_module = test_module
 
@@ -55,8 +55,20 @@ class ReplayTestingRunner:
         else:
             self._test_run_uuid = uuid.uuid4()
 
-        result_base = Path('test_results') if os.environ.get('CI') else Path(tempfile.gettempdir())
+        if output_dir:
+            result_base = Path(output_dir)
+        elif os.environ.get('CI'):
+            result_base = Path('test_results')
+        else:
+            result_base = Path(tempfile.gettempdir())
         self._replay_directory = result_base / 'replay_testing'
+
+        # os.access() is False for a path that does not exist yet, so without
+        # this the probe below would silently redirect every run to ./test_results.
+        try:
+            self._replay_directory.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            _logger_.error(f'Could not create {self._replay_directory}: {e}')
 
         if not os.access(self._replay_directory, os.W_OK):
             _logger_.error(
@@ -114,7 +126,13 @@ class ReplayTestingRunner:
         return replay_fixture_list
 
     def _create_run_launch_description(
-        self, filtered_fixture, run_fixture, test_ld: launch.LaunchDescription, run, params: ReplayRunParams
+        self,
+        filtered_fixture,
+        run_fixture,
+        test_ld: launch.LaunchDescription,
+        run,
+        params: ReplayRunParams,
+        expected_output_topics: Optional[list] = None,
     ) -> launch.LaunchDescription:
         # Define the process action for playing the MCAP file
         cmd = [
@@ -139,15 +157,34 @@ class ReplayTestingRunner:
             output='screen',
         )
 
-        # Launch description
-        ld = LaunchDescription([
-            ExecuteProcess(
-                cmd=['ros2', 'bag', 'record', '-s', 'mcap', '-o', str(run_fixture.path), '--all'],
-                output='screen',
-            ),
-            test_ld,
-            player_action,  # Add the MCAP playback action
-        ])
+        recorder_action = ExecuteProcess(
+            cmd=[
+                'ros2',
+                'bag',
+                'record',
+                '-s',
+                'mcap',
+                '-o',
+                str(run_fixture.path),
+                '--all',
+                '--storage-preset-profile',
+                'zstd_fast',
+            ],
+            output='screen',
+        )
+
+        # Hold the player until the stack under test is publishing, so a short
+        # fixture cannot finish before its output topics even exist.
+        gate = self._wait_for_stack_action(expected_output_topics, params)
+        if gate is not None:
+            start_playback = [
+                gate,
+                RegisterEventHandler(OnProcessExit(target_action=gate, on_exit=[player_action])),
+            ]
+        else:
+            start_playback = [player_action]
+
+        ld = LaunchDescription([recorder_action, test_ld, *start_playback])
 
         if not params.ignore_playback_finish:
             # Event handler to gracefully exit when the process finishes
@@ -162,6 +199,29 @@ class ReplayTestingRunner:
             ld.add_action(on_exit_handler)
 
         return ld
+
+    @staticmethod
+    def _wait_for_stack_action(expected_output_topics, params: ReplayRunParams):
+        """The process that gates playback, or None when not gating."""
+        runner_args = params.runner_args
+        if not runner_args.wait_for_stack:
+            return None
+
+        return ExecuteProcess(
+            cmd=[
+                'ros2',
+                'run',
+                'replay_testing',
+                'replay_test_wait_for_stack',
+                *expected_output_topics,
+                '--timeout',
+                str(runner_args.wait_for_stack_timeout),
+                '--grace',
+                str(runner_args.wait_for_stack_grace),
+            ],
+            name='wait_for_stack',
+            output='screen',
+        )
 
     def filter_fixtures(self) -> list[ReplayFixture]:
         self._log_stage_start(ReplayTestingPhase.FIXTURES)
@@ -193,23 +253,18 @@ class ReplayTestingRunner:
                 fixture.expected_output_topics if hasattr(fixture, 'expected_output_topics') else fixture.output_topics
             )
 
-            input_topics_present = []
-            for topic_type in topic_types:
-                if topic_type.name in required_input_topics:
-                    input_topics_present.append(topic_type.name)
+            declared = {topic_type.name for topic_type in topic_types}
+            missing_topics = set(required_input_topics) - declared
 
-            if set(input_topics_present) != set(required_input_topics):
-                missing_topics = set(required_input_topics) - set(input_topics_present)
-                extra_topics = set(input_topics_present) - set(required_input_topics)
+            if missing_topics:
+                _logger_.error(f'Required input topics not in the bag: {sorted(missing_topics)}')
+                raise AssertionError('Required input topics missing. Check logs for more information')
 
-                error_msg = 'Input topics do not match:'
-                if missing_topics:
-                    error_msg += f'\n  Missing topics: {sorted(missing_topics)}'
-                if extra_topics:
-                    error_msg += f'\n  Extra topics: {sorted(extra_topics)}'
-
-                _logger_.error(error_msg)
-                raise AssertionError('Input topics do not match. Check logs for more information')
+            # A topic may appear in the bag without messages. This isn't fatal:
+            # it means a silent sensor was correctly recorded. Only later analysis decides if that's an issue.
+            empty_topics = self._topics_without_messages(replay_fixture, sorted(set(required_input_topics) & declared))
+            if empty_topics:
+                _logger_.warning(f'Required input topics declared but empty: {sorted(empty_topics)}')
 
             replay_fixture.filter_input(expected_output_topics)
 
@@ -219,11 +274,31 @@ class ReplayTestingRunner:
 
         return self._replay_fixtures
 
+    @staticmethod
+    def _topics_without_messages(replay_fixture: ReplayFixture, topics: list[str]) -> list[str]:
+        """Which of these topics are declared in the bag but carry no messages."""
+        if not topics:
+            return []
+
+        counts = dict.fromkeys(topics, 0)
+        reader = replay_fixture.get_reader(FixtureType.INPUT)
+        while reader.has_next():
+            topic_name, _, _ = reader.read_next()
+            if topic_name in counts:
+                counts[topic_name] += 1
+
+        return [topic for topic, count in counts.items() if count == 0]
+
     def run(self):
         self._log_stage_start(ReplayTestingPhase.RUN)
 
         run_cls = self._get_stage_class(ReplayTestingPhase.RUN)
         run = run_cls()
+
+        fixture_cls = self._get_stage_class(ReplayTestingPhase.FIXTURES)
+        expected_output_topics = getattr(
+            fixture_cls, 'expected_output_topics', getattr(fixture_cls, 'output_topics', [])
+        )
 
         for replay_fixture in self._replay_fixtures:
             if len(run.parameters) == 0:
@@ -238,7 +313,12 @@ class ReplayTestingRunner:
                 test_launch_description = run.generate_launch_description(param)
 
                 ld = self._create_run_launch_description(
-                    replay_fixture.filtered_fixture, run_fixture, test_launch_description, run, param
+                    replay_fixture.filtered_fixture,
+                    run_fixture,
+                    test_launch_description,
+                    run,
+                    param,
+                    expected_output_topics,
                 )
                 launch_service = launch.LaunchService()
                 launch_service.include_launch_description(ld)
@@ -257,12 +337,13 @@ class ReplayTestingRunner:
             analyze_cls: type[Any] = self._get_stage_class(ReplayTestingPhase.ANALYZE)
 
             for run_fixture in replay_fixture.run_fixtures:
-                reader = get_sequential_mcap_reader(run_fixture.path)
 
                 class AnalyzeWithReader(analyze_cls):
                     def setUp(inner_self):
                         super().setUp()  # Call original setUp if it exists
-                        inner_self.reader = reader
+                        # Each test needs a fresh reader since readers can't rewind.
+                        inner_self.reader = get_sequential_mcap_reader(run_fixture.path)
+                        inner_self.run_fixture_path = run_fixture.path
                         inner_self.suite_classname = analyze_cls.__name__
 
                 suite = unittest.TestLoader().loadTestsFromTestCase(AnalyzeWithReader)
