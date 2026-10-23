@@ -13,7 +13,7 @@
 # limitations under the License.
 
 find_package(ament_cmake_test REQUIRED)
-find_package(python_cmake_module REQUIRED)
-find_package(PythonExtra REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+get_target_property(PYTHON_EXECUTABLE Python3::Interpreter LOCATION)
 
 include("${replay_testing_DIR}/add_replay_test.cmake")
